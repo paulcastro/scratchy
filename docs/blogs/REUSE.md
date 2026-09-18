@@ -1,40 +1,69 @@
-# What Does "Reuse" Mean in the Age of AI?
+# Generating Hyper-Specialized Inference Servers
 
-Every generation of programmers has been told the same thing: don't write it,
-reuse it. What quietly changes, generation to generation, is how much of
-somebody else's decisions you have to carry along with the part you wanted.
+In production AI inference, one question is quietly reshaping infrastructure:
+why are we still using universal, one-size-fits-all inference servers?
 
-It used to be all of them. A shared library arrived as a compiled `.so` and a
-header file — an opaque box whose insides your compiler couldn't see, let alone
-improve. Source-level languages like Python and JavaScript opened the box, but
-you still hauled the whole thing around; a `node_modules` directory is a
-monument to that. Bundlers were the first tools allowed to throw some of it
-away, though tree-shaking only deletes code nobody mentions by name. Then Rust
-and Go pushed specialization down into the semantics, and you get the fact that
-makes the era legible: a Go binary has no shared-library dependencies. Not
-because it's statically linked — because every capability arrived as *source*
-and left as machine code specialized for that one program.
+Today's dominant serving engines are generalists. They are designed to run
+almost any model on almost any hardware, dynamically parsing configuration files,
+constructing compute graphs at load time, and negotiating memory layouts on the
+fly. But generality comes with a steep price: multi-gigabyte container images,
+tens of seconds of startup latency, runtime dispatch overhead, and complex
+fallback logic.
 
-Fifty years of compiler engineering, and it all stops at a wall nobody thought
-to name. The code itself is sacred. A compiler may delete your dependency's
-unused parts and specialize its generic ones, but it may never restructure it.
-So the generality of the libraries you depend on is your generality too, whether
-or not you ever wanted it.
+Hyper-specialization flips this trade-off:
 
-That's the wall AI knocks down — not by making compilers smarter, but by making
-faithful transcription cheap. When you can re-express someone's *algorithm*
-inside your own structure in an afternoon instead of over two quarters of pull
-requests, the thing you're reusing stops being the module. It's the idea. And
-once ideas are the unit, every project gets to be bespoke.
+- **Minimal footprint, maximal performance:** An inference server built for
+  exactly one model architecture, one quantization preset, and one hardware
+  target eliminates dynamic dispatch and generic graph building entirely.
+- **Pushing runtime decisions to compile time:** Buffer management, kernel
+  selection, weight wiring, and tile geometries become compile-time constants
+  instead of runtime guesses.
+- **The trade-off:** A hyper-specialized server supports a narrower set of
+  requirements. But in real-world deployments, workloads are predictable: you run
+  a known model at a chosen precision on designated hardware.
 
-## Scratchy
+At IBM Research, hyper-specialization is a compelling direction for the
+IBM Spyre Accelerator. To unlock maximum inference throughput and efficiency on
+our own silicon, we want execution paths tailored directly to the hardware
+architecture without the overhead of generic runtime layers.
 
-[Scratchy](https://github.com/AI-native-Systems-Research/scratchy) is our
-existence proof: a compiler that takes a model architecture, a HuggingFace
-`config.json`, and a quantization preset, and emits an inference server that
-exists only for that triple.
+Historically, the obstacle to hyper-specialization was developer productivity.
+Writing and maintaining dozens of bespoke servers by hand was simply too
+expensive. AI coding tools change that calculus entirely: when generating,
+adapting, and transcribing code becomes fast and reliable, building bespoke
+software is no longer a luxury. Instead of deploying a single monolithic server,
+we can generate a fleet of lightweight, hyper-specialized servers on demand.
 
-Here is the *entire* definition of LLaMA — the whole forward pass:
+## What "Reuse" Means in the Age of AI
+
+This shift changes how we think about software reuse.
+
+For fifty years, software reuse meant hauling along someone else's code: shared
+libraries (`.so` files), source packages (`node_modules`), or heavy framework
+dependencies. But traditional compilers hit a fundamental wall: they can prune
+unused functions and specialize generics, but they cannot restructure the code.
+The generality and architectural baggage of your dependencies remain yours.
+
+When AI makes faithful code transcription cheap, the unit of reuse shifts from
+the **module** to the **idea**.
+
+Instead of importing an entire monolithic serving engine as a dependency, you
+can extract its core serving algorithms — paged KV caches, continuous batching,
+prefix caching — and transcribe them directly into a specialized compilation
+pipeline. You reuse the algorithmic insight without inheriting the runtime bloat.
+
+## Introducing Scratchy
+
+[Scratchy](https://github.com/AI-native-Systems-Research/scratchy) is the
+existence proof of this philosophy: a compiler that takes a model definition, a
+HuggingFace `config.json`, and a hardware preset, and emits a lean, standalone
+server tailored exclusively to that combination.
+
+In Scratchy, model architectures are defined in high-level, declarative Rust.
+Procedural macros do the heavy lifting at compile time — deriving weight wiring,
+buffer layouts, and dispatch tables.
+
+Here is the complete definition of LLaMA in Scratchy — the entire forward pass:
 
 ```rust
 #[forward]
@@ -61,48 +90,50 @@ fn llama() {
 }
 ```
 
-Twenty-two lines. No weight wiring, no kernel selection, no buffer management,
-no dispatch tables — Rust's procedural macros derive all of it at compile time.
-**25 architectures fit in 1,580 lines** this way. The payoff: a 30 MiB binary,
-and 300 ms warm startup *independent of model size*, because there's no graph to
-build at load time. The graph is a constant.
+Twenty-two lines. Across the entire repository, 25 model architectures fit into
+just 1,580 lines of code.
 
-The serving algorithms — paged KV cache, continuous batching, prefix caching —
-are [vLLM's](https://github.com/vllm-project/vllm), transcribed into Rust and
-credited by file and line at each site. Seventy citations to a repository that
-isn't in our build graph. That's what a dependency looks like when the unit of
-reuse is an idea.
+The payoff: a **30 MiB binary** with a **300 ms warm startup time**, independent
+of model size, because the computation graph is fixed at compile time.
 
-## Why this matters for Spyre
+The serving algorithms are drawn directly from
+[vLLM](https://github.com/vllm-project/vllm), transcribed into Rust and credited
+by file and line at each use site. Seventy citations to a repository that never
+enters the build graph — the ultimate expression of reuse at the idea level.
 
-Scratchy's first target isn't CUDA. It's the **IBM Spyre AIU** — and that's the
-real test, because exotic hardware is where the library era has nothing to
-offer.
+## Why This Matters for IBM Spyre
 
-Each Spyre core has a 2 MiB scratchpad, of which 1,677,721 bytes are yours.
-Every tile of every operation must fit. Overflow it and you don't get an error
-message — you get `DtException 1535` on the card, minutes later, about a tile
-you can no longer inspect. The dominant cost of novel silicon isn't writing
-kernels; it's the feedback loop from a nameless on-card fault back to the line
-of math that caused it.
+Hyper-specialization and compile-time guarantees are especially powerful on
+novel, exotic hardware like the **IBM Spyre AIU**.
 
-Because scratchy knows every tile size at compile time, that fault becomes a
-`cargo build` error on your laptop. A general-purpose runtime structurally
-can't do this: it doesn't know the shapes until it's already running, on the
-card, where the only channel back to you is an integer.
+To understand why, imagine working at a tiny physical workbench that holds only a
+couple of sheets of paper (1.6 MB of usable scratchpad memory per Spyre core).
+Every chunk of math ("tile") must fit on that workbench:
 
-Spyre support is ~129,000 lines of Rust, twice the size of our CUDA backend, and
-it cost **zero lines of model code**. Same 1,580 lines. Same 22-line LLaMA. An
-8B model boots in 12 seconds from a 330 MiB image.
+- **The general runtime approach:** A runtime attempts to partition math into
+  tiles dynamically while running on the hardware. If a tile is even one byte too
+  large, the card faults minutes later with a cryptic `DtException 1535` error,
+  leaving no way to identify which line of math caused the overflow.
+- **The Scratchy approach:** Because Scratchy compiles specifically for the target
+  hardware, every tile size is calculated at compile time. If an operation
+  exceeds the 1.6 MB limit, `cargo build` fails immediately on the developer's
+  laptop with a precise error and line number.
 
-Which is the part worth tweeting. Reuse-by-code quietly puts a *population
-threshold* on what hardware is allowed to exist — "support" means a vendor
-maintaining a general backend inside someone else's general framework until the
-market justifies the headcount. Reuse-by-idea drops that threshold to one team
-with a compiler.
+Supporting novel silicon with no existing ecosystem required about as much Rust
+as supporting CUDA, and required **zero changes** to model code: the same
+22-line LLaMA definition runs on both. An 8B model boots in 12 seconds from a
+330 MiB container image.
 
-The payoff isn't faster inference. It's that novel silicon becomes viable at a
-scale where it wasn't.
+## A New Threshold for Novel Silicon
+
+Traditional reuse-by-code imposes a high population threshold on new hardware:
+a chip vendor must maintain complex backends across multiple general-purpose
+frameworks before developers can even experiment with it.
+
+Reuse-by-idea, paired with AI-driven code generation, lowers that threshold to a
+single team with a compiler. When hyper-specialized inference servers can be
+generated on demand, novel silicon becomes practical at scales where it never
+was before.
 
 ---
 
