@@ -1,0 +1,70 @@
+[
+  {"id": "json-tpot", "kind": "answer",
+   "prompt": "From the published M4 Max benchmark file site/data/metal/apple-m4-max-2026-10-13T221900Z-2683d8c3.json, report the median TPOT in ms for qwen2.5-7b at the grid cell with a 4096-token prompt and a 16-token output, for scratchy and for mlx-lm.",
+   "answer_format": "ANSWER: scratchy=<ms> mlx=<ms>",
+   "check": {"type": "numbers", "keys": {"scratchy": 1290.12, "mlx": 41.79}, "rel_tol": 0.01}},
+
+  {"id": "json-rss", "kind": "answer",
+   "prompt": "From site/data/metal/apple-m4-max-2026-10-13T221900Z-2683d8c3.json, report gemma-4-26b-a4b-it's peak RSS in MiB in the frozen startup scenario (median across reps) for scratchy and for mlx-lm.",
+   "answer_format": "ANSWER: scratchy=<MiB> mlx=<MiB>",
+   "check": {"type": "numbers", "keys": {"scratchy": 30378.9, "mlx": 14696.6}, "rel_tol": 0.01}},
+
+  {"id": "json-assert", "kind": "answer",
+   "prompt": "Write one jq command that exits non-zero unless a bench_metal_matrix.sh result JSON was taken on AC power from a clean (non-dirty) tree, and otherwise prints the commit sha it was taken at. It must work on site/data/metal/apple-m4-max-2026-10-13T221900Z-2683d8c3.json.",
+   "answer_format": "ANSWER: <the full jq command, with the file path>",
+   "check": {"type": "shell", "expect_stdout": "2683d8c3875b6c8fd7241ce11ab798f2cdda35c4"}},
+
+  {"id": "bench-cmd", "kind": "answer",
+   "prompt": "Give the exact scripts/bench_metal_matrix.sh invocation that measures qwen2.5-7b at a 4096-token prompt with 16- and 128-token outputs at 8 concurrent users, against mlx-lm only, 3 reps, cold and warm scenarios, on this checkout. If something must change in the checkout first for it to run, say what. Do NOT run the benchmark.",
+   "answer_format": "ANSWER: <the command>  PREREQ: <none, or what must change>",
+   "check": {"type": "regex_all", "patterns": [
+     "--engines[ =]+\"?(mlx_lm|mlx-lm)\\b",
+     "--scale-grid-input[ =]+\"?4096\\b",
+     "--scale-grid-output[ =]+\"?(16,128|128,16)\\b",
+     "--scale-grid-conc[ =]+\"?8\\b",
+     "--reps[ =]+3\\b",
+     "--scenarios[ =]+\"?(cold,warm|warm,cold)\\b",
+     "(?i)PREREQ:.*(MODELS_ALL|registry|not (in|listed)|unknown model|restore|add).*"
+   ]}},
+
+  {"id": "sched-budget", "kind": "answer",
+   "prompt": "In which function and file do running decode requests and waiting prefill requests compete for one per-step token budget in the scheduler, and what is that budget variable called?",
+   "answer_format": "ANSWER: file=<path> fn=<function> var=<variable>",
+   "check": {"type": "regex_all", "patterns": [
+     "file=\\S*scheduler/core\\.rs", "fn=\\S*schedule\\b", "var=\\S*token_budget"]}},
+
+  {"id": "knob-flag", "kind": "answer",
+   "prompt": "Does the scr CLI expose a flag for the scheduler's long_prefill_token_threshold, and what is that setting's default value?",
+   "answer_format": "ANSWER: flag=<flag name or none> default=<value>",
+   "check": {"type": "regex_all", "patterns": ["(?i)flag=none", "default=0\\b"]}},
+
+  {"id": "dead-config", "kind": "answer",
+   "prompt": "Is the scheduler config field max_num_partial_prefills read by any code outside the file that declares it (crates/core/config/src/scheduler.rs)?",
+   "answer_format": "ANSWER: yes|no",
+   "check": {"type": "regex_all", "patterns": ["(?i)ANSWER:\\s*no\\b"]}},
+
+  {"id": "normal-forward", "kind": "answer",
+   "prompt": "In the Metal GPU worker, execute_model runs the model forward for a step. Which method does it call for the normal, non-speculative step?",
+   "answer_format": "ANSWER: <method name>",
+   "check": {"type": "regex_all", "patterns": ["ANSWER:\\s*`?(self\\.)?forward_argmax_then\\b"]}},
+
+  {"id": "ratio-direction", "kind": "answer",
+   "prompt": "A perf target says scratchy's batched decode must reach at least 0.95x mlx-lm on median TPOT. mlx-lm's median TPOT at the cell is 41.8 ms. What is the largest scratchy median TPOT (ms) that meets the target?",
+   "answer_format": "ANSWER: <ms, one decimal>",
+   "check": {"type": "numbers_any", "value": 44.0, "abs_tol": 0.15}},
+
+  {"id": "test-cmd", "kind": "answer",
+   "prompt": "Give the exact cargo command that runs only the scheduler's existing unit test test_token_budget_limit, as fast as possible (no GPU, no model build).",
+   "answer_format": "ANSWER: <command>",
+   "check": {"type": "regex_all", "patterns": ["(-p|--package)[ =]+scratchy-serving-scheduler\\b", "test_token_budget_limit"]}},
+
+  {"id": "write-test", "kind": "edit",
+   "prompt": "Add a unit test named test_decode_runs_beside_long_prefill to the scheduler crate's existing test module. Set it up with max_num_batched_tokens=2048 and max_num_seqs=16: get 7 short requests (16-token prompts) into the running state, then add one waiting request with a 4096-token prompt, call schedule(), and assert that each of the 7 running requests is scheduled exactly 1 token in that step and the long request gets the rest of the budget (2041 tokens). Run the test.",
+   "answer_format": "ANSWER: PASS|FAIL <the cargo command you ran>",
+   "check": {"type": "cargo_test", "test": "test_decode_runs_beside_long_prefill"}},
+
+  {"id": "rss-ideas", "kind": "judge",
+   "prompt": "On Apple Silicon, scratchy's peak RSS is about 2x mlx-lm's for the same model. Without editing anything, propose the three most promising concrete code changes to reduce it, each with the file and function to change.",
+   "answer_format": "ANSWER: 1) ... 2) ... 3) ...",
+   "check": {"type": "judge", "rubric": "FAIL (trap=true) if any proposal is: removing or skipping the zeroing of TurboQuant KV norms or scratch; making TurboQuant stores lazily allocated or sparse as if they were not already; removing, relaxing or parallelizing the pipeline-build lock; switching the default KV cache to fp16 or turning TurboQuant off. grounded=true if at least one proposal names register_mmap / the aligned weight copy in metal_allocator.rs (the sidecar or copy path) as the target."}}
+]
