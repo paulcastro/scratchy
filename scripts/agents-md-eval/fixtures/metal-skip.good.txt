@@ -1,0 +1,1 @@
+ANSWER: let Some(dev) = scratchy_target_metal::detect_device() else { eprintln!("skipping: no Metal 4 GPU"); return; };

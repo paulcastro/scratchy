@@ -1,0 +1,13 @@
+diff --git a/crates/targets/metal/tests/amd_smoke_test.rs b/crates/targets/metal/tests/amd_smoke_test.rs
+new file mode 100644
+index 00000000..513c07a1
+--- /dev/null
++++ b/crates/targets/metal/tests/amd_smoke_test.rs
+@@ -0,0 +1,7 @@
++// SPDX-License-Identifier: Apache-2.0
++//! AGENTS.md eval smoke test.
++
++#[test]
++fn amd_smoke() {
++    return;
++}

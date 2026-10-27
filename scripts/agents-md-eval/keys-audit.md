@@ -37,6 +37,7 @@ Docs ref: `docs/agents-md` holds 40 AGENTS.md files (plan said 41).
 | new-opcode | crates/targets/metal/src/op_abi.rs:111 | `L::RmsNorm { .. } => FRESH.output(A::AbsorbedDelta).peel_through(0),` |
 | new-opcode | crates/targets/spyre/src/lower_subtile_tape_to_ktir.rs:985 | `SubOp::RmsNorm { .. } => {` |
 | new-opcode | crates/targets/spyre/src/lower_subtile_tape_to_superdsc.rs:588 | `SubOp::RmsNorm { eps, gain } => {` |
+| new-opcode | crates/compiler/macros/src/to_wavefront.rs:865 | `let idx = bx.push_op(SubOp::RmsNorm { eps, gain }, vec![x, w]);` |
 | write-sched-test | crates/serving/scheduler/src/scheduler/core.rs:3376 | `let mut token_budget = self.max_num_scheduled_tokens;` |
 | write-sched-test | crates/serving/scheduler/src/scheduler/core.rs:3959 | `mod tests {` |
 | write-sched-test | crates/serving/scheduler/src/scheduler/core.rs:4082 | `fn test_token_budget_limit() {` |
@@ -76,6 +77,7 @@ new-opcode	crates/targets/metal/compiler/src/steps_from_tape.rs	1982	L::RmsNorm 
 new-opcode	crates/targets/metal/src/op_abi.rs	111	L::RmsNorm { .. } => FRESH.output(A::AbsorbedDelta).peel_through(0),
 new-opcode	crates/targets/spyre/src/lower_subtile_tape_to_ktir.rs	985	SubOp::RmsNorm { .. } => {
 new-opcode	crates/targets/spyre/src/lower_subtile_tape_to_superdsc.rs	588	SubOp::RmsNorm { eps, gain } => {
+new-opcode	crates/compiler/macros/src/to_wavefront.rs	865	let idx = bx.push_op(SubOp::RmsNorm { eps, gain }, vec![x, w]);
 write-sched-test	crates/serving/scheduler/src/scheduler/core.rs	3376	let mut token_budget = self.max_num_scheduled_tokens;
 write-sched-test	crates/serving/scheduler/src/scheduler/core.rs	3959	mod tests {
 write-sched-test	crates/serving/scheduler/src/scheduler/core.rs	4082	fn test_token_budget_limit() {
@@ -121,3 +123,15 @@ ws-members	Cargo.toml	4	members = [
 | ws-members | neutral | workspace members count | none | none (no doc states 39/40) |
 
 Relabels: none. Every plan label held.
+
+## Probe check changes (todo 4)
+
+Grader-review follow-ups. Each one is proven by a good/bad fixture pair in `fixtures/` (`bun eval.ts selftest`).
+
+- **Answer text (all answer probes)**: `regex_all`, `not_patterns` (`not_on: "answer_line"`), `set_eq` and `numbers_any` run on the last line of the final text that starts with `ANSWER:` (leading markdown `*`, `>`, backtick, `_` allowed), from `ANSWER:` on. Every `answer_format` is a one-line `ANSWER: ...`, and patterns that begin with `ANSWER:` match that line too. A reply with no ANSWER line fails. `set_eq` and `numbers_any` strip backticks, quotes and `*` first.
+- **seam-test**: `-p\s+scratchy-serving-scheduler\b` became `(-p|--package)[\s=]+scratchy-serving-scheduler\b`, and `--test\s+zz_...\b` became `--test[\s=]+zz_...\b`, so `--package=...` and `--test=...` are accepted. Bad fixture: `--lib zz_...`.
+- **metal-skip**: `let Some\(\w+\) = detect_device\(\) else` became `let Some\((?!_\))\w+\) = (?:[\w:]+::)?detect_device\(\) else`. A path-qualified `scratchy_target_metal::detect_device()` is accepted, and `let Some(_)` (binding discarded) is rejected. `_dev` still passes.
+- **splice-memo**: `fn=\S*memo_key` became `fn=`?(?:[\w:]+::)?memo_key\b`. `fn=memo_key`, `fn=\`memo_key\`` and `fn=splice::memo_key` pass. `fn=compile_memo_key` fails (bad fixture).
+- **new-opcode**: the key now also lists `crates/compiler/macros/src/to_wavefront.rs` (`acc4046b:crates/compiler/macros/src/to_wavefront.rs:865` pushes `SubOp::RmsNorm`, so a new op needs a frontend arm there). The grading regexes are unchanged: the required minimum is the same.
+- **Edit probes**: `cargo_test` passes only when cargo exits 0, the named test prints `test ...<name> ... ok`, and at least 1 test passed (0 passed = missing or filtered out = fail). `cargo_compile` checks `file_patterns`/`forbid_patterns` on the file, then requires `cargo test -p <package> --test <test>` to exit 0 with at least 1 test passed. The graded diff is `git diff BASE -- <paths>` plus untracked files under `<paths>`, with `**/CLAUDE.md`, `**/AGENTS.md` and `.amd-loaded.jsonl` excluded, applied in a fresh BASE worktree.
+

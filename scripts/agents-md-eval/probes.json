@@ -10,7 +10,7 @@
       "check": {
         "type": "regex_all",
         "patterns": [
-          "let Some\\(\\w+\\) = detect_device\\(\\) else",
+          "let Some\\((?!_\\))\\w+\\) = (?:[\\w:]+::)?detect_device\\(\\) else",
           "skipping: no Metal 4 GPU"
         ]
       },
@@ -50,7 +50,7 @@
       "check": {
         "type": "regex_all",
         "patterns": [
-          "fn=\\S*memo_key",
+          "fn=`?(?:[\\w:]+::)?memo_key\\b",
           "full_source=yes"
         ]
       },
@@ -70,8 +70,8 @@
       "check": {
         "type": "regex_all",
         "patterns": [
-          "-p\\s+scratchy-serving-scheduler\\b",
-          "--test\\s+zz_kv_extent_spans_the_worker_and_the_allocator\\b"
+          "(-p|--package)[\\s=]+scratchy-serving-scheduler\\b",
+          "--test[\\s=]+zz_kv_extent_spans_the_worker_and_the_allocator\\b"
         ]
       },
       "key": "ANSWER: cargo test -p scratchy-serving-scheduler --test zz_kv_extent_spans_the_worker_and_the_allocator",
@@ -225,14 +225,15 @@
           "crates/targets/spyre/src/lower_subtile_tape_to_(ktir|superdsc)\\.rs"
         ]
       },
-      "key": "ANSWER: files=crates/compiler/subtile/src/subtile_ir.rs,crates/compiler/subtile/src/ops.rs,crates/targets/metal/compiler/src/steps_from_tape.rs,crates/targets/metal/src/op_abi.rs,crates/targets/spyre/src/lower_subtile_tape_to_ktir.rs,crates/targets/spyre/src/op_abi.rs",
+      "key": "ANSWER: files=crates/compiler/subtile/src/subtile_ir.rs,crates/compiler/subtile/src/ops.rs,crates/targets/metal/compiler/src/steps_from_tape.rs,crates/targets/metal/src/op_abi.rs,crates/targets/spyre/src/lower_subtile_tape_to_ktir.rs,crates/targets/spyre/src/op_abi.rs,crates/compiler/macros/src/to_wavefront.rs",
       "key_evidence": [
         "crates/compiler/subtile/src/subtile_ir.rs:1100: RmsNorm { eps: f32, gain: GainConvention },",
         "crates/compiler/subtile/src/ops.rs:12: //! Adding an op = adding its variant (with its prose docs) and ONE row here. Every generated",
         "crates/targets/metal/compiler/src/steps_from_tape.rs:1982: L::RmsNorm { gain, .. } => self.norm(i, gain)?,",
         "crates/targets/metal/src/op_abi.rs:111: L::RmsNorm { .. } => FRESH.output(A::AbsorbedDelta).peel_through(0),",
         "crates/targets/spyre/src/lower_subtile_tape_to_ktir.rs:985: SubOp::RmsNorm { .. } => {",
-        "crates/targets/spyre/src/lower_subtile_tape_to_superdsc.rs:588: SubOp::RmsNorm { eps, gain } => {"
+        "crates/targets/spyre/src/lower_subtile_tape_to_superdsc.rs:588: SubOp::RmsNorm { eps, gain } => {",
+        "crates/compiler/macros/src/to_wavefront.rs:865: let idx = bx.push_op(SubOp::RmsNorm { eps, gain }, vec![x, w]);"
       ]
     },
     {

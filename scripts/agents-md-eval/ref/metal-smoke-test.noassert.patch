@@ -1,0 +1,19 @@
+diff --git a/crates/targets/metal/tests/amd_smoke_test.rs b/crates/targets/metal/tests/amd_smoke_test.rs
+new file mode 100644
+index 00000000..e0973c2c
+--- /dev/null
++++ b/crates/targets/metal/tests/amd_smoke_test.rs
+@@ -0,0 +1,13 @@
++// SPDX-License-Identifier: Apache-2.0
++//! AGENTS.md eval smoke test: skips without a Metal 4 GPU, else checks detection.
++
++use scratchy_target_metal::device::{detect_device, metal4_available};
++
++#[test]
++fn amd_smoke() {
++    let Some(_dev) = detect_device() else {
++        eprintln!("skipping: no Metal 4 GPU");
++        return;
++    };
++    let _ = metal4_available();
++}

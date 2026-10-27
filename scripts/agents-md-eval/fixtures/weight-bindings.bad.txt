@@ -1,0 +1,2 @@
+I would look at weight_bindings.rs first.
+ANSWER: crates/compiler/macros/src/codegen.rs

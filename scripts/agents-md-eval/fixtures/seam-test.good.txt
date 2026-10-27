@@ -1,0 +1,1 @@
+ANSWER: cargo test --package=scratchy-serving-scheduler --test zz_kv_extent_spans_the_worker_and_the_allocator

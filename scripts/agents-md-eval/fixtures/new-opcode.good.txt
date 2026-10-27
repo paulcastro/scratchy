@@ -1,0 +1,1 @@
+ANSWER: files=crates/compiler/subtile/src/subtile_ir.rs,crates/compiler/subtile/src/ops.rs,crates/targets/metal/compiler/src/steps_from_tape.rs,crates/targets/metal/src/op_abi.rs,crates/targets/spyre/src/lower_subtile_tape_to_ktir.rs,crates/targets/spyre/src/op_abi.rs,crates/compiler/macros/src/to_wavefront.rs

@@ -1,0 +1,2 @@
+patch: metal-smoke-test.patch
+ANSWER: PASS cargo test -p scratchy-target-metal --test amd_smoke_test

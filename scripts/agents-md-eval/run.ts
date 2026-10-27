@@ -15,7 +15,7 @@ import { reserve, settleUnlaunched, spend } from "./ledger";
 const REPO = join(import.meta.dir, "../..");
 const RUN_TIMEOUT_MS = Number(process.env.AMD_EVAL_RUN_TIMEOUT_MS ?? 900_000);
 // Files whose content defines what a result means; any change invalidates resume. Todos 4/6 add grader/verdict files.
-export const HASHED_FILES = ["probes.json", "arms.ts", "claude.ts", "run.ts", "report.ts"];
+export const HASHED_FILES = ["probes.json", "arms.ts", "claude.ts", "run.ts", "report.ts", "grade.ts"];
 
 export type RunOpts = {
   out: string; base: string; docsRef: string; ns: string; model: string; reps: number; jobs: number;

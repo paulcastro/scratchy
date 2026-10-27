@@ -1,0 +1,2 @@
+patch: write-sched-test.patch
+ANSWER: PASS cargo test -p scratchy-serving-scheduler --lib test_decode_runs_beside_long_prefill

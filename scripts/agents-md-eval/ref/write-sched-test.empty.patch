@@ -1,0 +1,16 @@
+diff --git a/crates/serving/scheduler/src/scheduler/core.rs b/crates/serving/scheduler/src/scheduler/core.rs
+index e95d5467..1dc03a6b 100644
+--- a/crates/serving/scheduler/src/scheduler/core.rs
++++ b/crates/serving/scheduler/src/scheduler/core.rs
+@@ -4099,6 +4099,11 @@ mod tests {
+         assert_eq!(output.scheduled_new_reqs.len(), 3);
+     }
+ 
++    #[test]
++    fn test_decode_runs_beside_long_prefill() {
++
++    }
++
+     #[test]
+     fn test_chunked_prefill_disabled() {
+         let cfg = SchedulerConfig {

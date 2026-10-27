@@ -1,0 +1,4 @@
+patch: none
+patch: metal-smoke-test.noop.patch
+patch: metal-smoke-test.noassert.patch
+ANSWER: PASS cargo test -p scratchy-target-metal --test amd_smoke_test
