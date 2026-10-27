@@ -1,0 +1,822 @@
+[
+ {
+  "id": "syn/A/metal-skip/1",
+  "ns": "matrix",
+  "model": "syn",
+  "arm": "A",
+  "probe": "metal-skip",
+  "group": "child",
+  "rep": 1,
+  "pass": true,
+  "exit": 0,
+  "timed_out": false,
+  "wall_s": 60,
+  "cost_usd": 1,
+  "usage": {
+   "input_tokens": 100,
+   "output_tokens": 50,
+   "cache_read_input_tokens": 1000,
+   "cache_creation_input_tokens": 0
+  },
+  "num_turns": 4,
+  "tool_calls": 5,
+  "search_before_hit": 2,
+  "docs_loaded": [],
+  "budget_hit": false,
+  "trap_hits": []
+ },
+ {
+  "id": "syn/B/metal-skip/1",
+  "ns": "matrix",
+  "model": "syn",
+  "arm": "B",
+  "probe": "metal-skip",
+  "group": "child",
+  "rep": 1,
+  "pass": true,
+  "exit": 0,
+  "timed_out": false,
+  "wall_s": 60,
+  "cost_usd": 1,
+  "usage": {
+   "input_tokens": 100,
+   "output_tokens": 50,
+   "cache_read_input_tokens": 1000,
+   "cache_creation_input_tokens": 0
+  },
+  "num_turns": 4,
+  "tool_calls": 5,
+  "search_before_hit": 2,
+  "docs_loaded": [
+   "AGENTS.md"
+  ],
+  "budget_hit": false,
+  "trap_hits": []
+ },
+ {
+  "id": "syn/C/metal-skip/1",
+  "ns": "matrix",
+  "model": "syn",
+  "arm": "C",
+  "probe": "metal-skip",
+  "group": "child",
+  "rep": 1,
+  "pass": true,
+  "exit": 0,
+  "timed_out": false,
+  "wall_s": 60,
+  "cost_usd": 1,
+  "usage": {
+   "input_tokens": 100,
+   "output_tokens": 50,
+   "cache_read_input_tokens": 1000,
+   "cache_creation_input_tokens": 0
+  },
+  "num_turns": 4,
+  "tool_calls": 5,
+  "search_before_hit": 2,
+  "docs_loaded": [
+   "AGENTS.md"
+  ],
+  "budget_hit": false,
+  "trap_hits": []
+ },
+ {
+  "id": "syn/A/head-dim/1",
+  "ns": "matrix",
+  "model": "syn",
+  "arm": "A",
+  "probe": "head-dim",
+  "group": "child",
+  "rep": 1,
+  "pass": false,
+  "exit": 0,
+  "timed_out": false,
+  "wall_s": 60,
+  "cost_usd": 1,
+  "usage": {
+   "input_tokens": 100,
+   "output_tokens": 50,
+   "cache_read_input_tokens": 1000,
+   "cache_creation_input_tokens": 0
+  },
+  "num_turns": 4,
+  "tool_calls": 5,
+  "search_before_hit": 2,
+  "docs_loaded": [],
+  "budget_hit": false,
+  "trap_hits": []
+ },
+ {
+  "id": "syn/B/head-dim/1",
+  "ns": "matrix",
+  "model": "syn",
+  "arm": "B",
+  "probe": "head-dim",
+  "group": "child",
+  "rep": 1,
+  "pass": true,
+  "exit": 0,
+  "timed_out": false,
+  "wall_s": 60,
+  "cost_usd": 1,
+  "usage": {
+   "input_tokens": 100,
+   "output_tokens": 50,
+   "cache_read_input_tokens": 1000,
+   "cache_creation_input_tokens": 0
+  },
+  "num_turns": 4,
+  "tool_calls": 5,
+  "search_before_hit": 2,
+  "docs_loaded": [
+   "AGENTS.md"
+  ],
+  "budget_hit": false,
+  "trap_hits": []
+ },
+ {
+  "id": "syn/C/head-dim/1",
+  "ns": "matrix",
+  "model": "syn",
+  "arm": "C",
+  "probe": "head-dim",
+  "group": "child",
+  "rep": 1,
+  "pass": false,
+  "exit": 0,
+  "timed_out": false,
+  "wall_s": 60,
+  "cost_usd": 1,
+  "usage": {
+   "input_tokens": 100,
+   "output_tokens": 50,
+   "cache_read_input_tokens": 1000,
+   "cache_creation_input_tokens": 0
+  },
+  "num_turns": 4,
+  "tool_calls": 5,
+  "search_before_hit": 2,
+  "docs_loaded": [
+   "AGENTS.md"
+  ],
+  "budget_hit": false,
+  "trap_hits": []
+ },
+ {
+  "id": "syn/A/splice-memo/1",
+  "ns": "matrix",
+  "model": "syn",
+  "arm": "A",
+  "probe": "splice-memo",
+  "group": "child",
+  "rep": 1,
+  "pass": false,
+  "exit": 0,
+  "timed_out": false,
+  "wall_s": 60,
+  "cost_usd": 1,
+  "usage": {
+   "input_tokens": 100,
+   "output_tokens": 50,
+   "cache_read_input_tokens": 1000,
+   "cache_creation_input_tokens": 0
+  },
+  "num_turns": 4,
+  "tool_calls": 5,
+  "search_before_hit": 2,
+  "docs_loaded": [],
+  "budget_hit": false,
+  "trap_hits": []
+ },
+ {
+  "id": "syn/B/splice-memo/1",
+  "ns": "matrix",
+  "model": "syn",
+  "arm": "B",
+  "probe": "splice-memo",
+  "group": "child",
+  "rep": 1,
+  "pass": false,
+  "exit": 0,
+  "timed_out": false,
+  "wall_s": 60,
+  "cost_usd": 1,
+  "usage": {
+   "input_tokens": 100,
+   "output_tokens": 50,
+   "cache_read_input_tokens": 1000,
+   "cache_creation_input_tokens": 0
+  },
+  "num_turns": 4,
+  "tool_calls": 5,
+  "search_before_hit": 2,
+  "docs_loaded": [
+   "AGENTS.md"
+  ],
+  "budget_hit": false,
+  "trap_hits": []
+ },
+ {
+  "id": "syn/C/splice-memo/1",
+  "ns": "matrix",
+  "model": "syn",
+  "arm": "C",
+  "probe": "splice-memo",
+  "group": "child",
+  "rep": 1,
+  "pass": false,
+  "exit": 0,
+  "timed_out": false,
+  "wall_s": 60,
+  "cost_usd": 1,
+  "usage": {
+   "input_tokens": 100,
+   "output_tokens": 50,
+   "cache_read_input_tokens": 1000,
+   "cache_creation_input_tokens": 0
+  },
+  "num_turns": 4,
+  "tool_calls": 5,
+  "search_before_hit": 2,
+  "docs_loaded": [
+   "AGENTS.md"
+  ],
+  "budget_hit": false,
+  "trap_hits": []
+ },
+ {
+  "id": "syn/A/scoped-build/1",
+  "ns": "matrix",
+  "model": "syn",
+  "arm": "A",
+  "probe": "scoped-build",
+  "group": "root",
+  "rep": 1,
+  "pass": true,
+  "exit": 0,
+  "timed_out": false,
+  "wall_s": 60,
+  "cost_usd": 1,
+  "usage": {
+   "input_tokens": 100,
+   "output_tokens": 50,
+   "cache_read_input_tokens": 1000,
+   "cache_creation_input_tokens": 0
+  },
+  "num_turns": 4,
+  "tool_calls": 5,
+  "search_before_hit": 2,
+  "docs_loaded": [],
+  "budget_hit": false,
+  "trap_hits": []
+ },
+ {
+  "id": "syn/B/scoped-build/1",
+  "ns": "matrix",
+  "model": "syn",
+  "arm": "B",
+  "probe": "scoped-build",
+  "group": "root",
+  "rep": 1,
+  "pass": true,
+  "exit": 0,
+  "timed_out": false,
+  "wall_s": 60,
+  "cost_usd": 1,
+  "usage": {
+   "input_tokens": 100,
+   "output_tokens": 50,
+   "cache_read_input_tokens": 1000,
+   "cache_creation_input_tokens": 0
+  },
+  "num_turns": 4,
+  "tool_calls": 5,
+  "search_before_hit": 2,
+  "docs_loaded": [
+   "AGENTS.md"
+  ],
+  "budget_hit": false,
+  "trap_hits": []
+ },
+ {
+  "id": "syn/C/scoped-build/1",
+  "ns": "matrix",
+  "model": "syn",
+  "arm": "C",
+  "probe": "scoped-build",
+  "group": "root",
+  "rep": 1,
+  "pass": true,
+  "exit": 0,
+  "timed_out": false,
+  "wall_s": 60,
+  "cost_usd": 1,
+  "usage": {
+   "input_tokens": 100,
+   "output_tokens": 50,
+   "cache_read_input_tokens": 1000,
+   "cache_creation_input_tokens": 0
+  },
+  "num_turns": 4,
+  "tool_calls": 5,
+  "search_before_hit": 2,
+  "docs_loaded": [
+   "AGENTS.md"
+  ],
+  "budget_hit": false,
+  "trap_hits": []
+ },
+ {
+  "id": "syn/A/ws-members/1",
+  "ns": "matrix",
+  "model": "syn",
+  "arm": "A",
+  "probe": "ws-members",
+  "group": "neutral",
+  "rep": 1,
+  "pass": true,
+  "exit": 0,
+  "timed_out": false,
+  "wall_s": 60,
+  "cost_usd": 1,
+  "usage": {
+   "input_tokens": 100,
+   "output_tokens": 50,
+   "cache_read_input_tokens": 1000,
+   "cache_creation_input_tokens": 0
+  },
+  "num_turns": 4,
+  "tool_calls": 5,
+  "search_before_hit": 2,
+  "docs_loaded": [],
+  "budget_hit": false,
+  "trap_hits": []
+ },
+ {
+  "id": "syn/B/ws-members/1",
+  "ns": "matrix",
+  "model": "syn",
+  "arm": "B",
+  "probe": "ws-members",
+  "group": "neutral",
+  "rep": 1,
+  "pass": true,
+  "exit": 0,
+  "timed_out": false,
+  "wall_s": 60,
+  "cost_usd": 1,
+  "usage": {
+   "input_tokens": 100,
+   "output_tokens": 50,
+   "cache_read_input_tokens": 2000,
+   "cache_creation_input_tokens": 0
+  },
+  "num_turns": 4,
+  "tool_calls": 5,
+  "search_before_hit": 2,
+  "docs_loaded": [
+   "AGENTS.md"
+  ],
+  "budget_hit": false,
+  "trap_hits": []
+ },
+ {
+  "id": "syn/C/ws-members/1",
+  "ns": "matrix",
+  "model": "syn",
+  "arm": "C",
+  "probe": "ws-members",
+  "group": "neutral",
+  "rep": 1,
+  "pass": true,
+  "exit": 0,
+  "timed_out": false,
+  "wall_s": 60,
+  "cost_usd": 1,
+  "usage": {
+   "input_tokens": 100,
+   "output_tokens": 50,
+   "cache_read_input_tokens": 1000,
+   "cache_creation_input_tokens": 0
+  },
+  "num_turns": 4,
+  "tool_calls": 5,
+  "search_before_hit": 2,
+  "docs_loaded": [
+   "AGENTS.md"
+  ],
+  "budget_hit": false,
+  "trap_hits": []
+ },
+ {
+  "id": "syn/A/metal-skip/2",
+  "ns": "matrix",
+  "model": "syn",
+  "arm": "A",
+  "probe": "metal-skip",
+  "group": "child",
+  "rep": 2,
+  "pass": true,
+  "exit": 0,
+  "timed_out": false,
+  "wall_s": 60,
+  "cost_usd": 1,
+  "usage": {
+   "input_tokens": 100,
+   "output_tokens": 50,
+   "cache_read_input_tokens": 1000,
+   "cache_creation_input_tokens": 0
+  },
+  "num_turns": 4,
+  "tool_calls": 5,
+  "search_before_hit": 2,
+  "docs_loaded": [],
+  "budget_hit": false,
+  "trap_hits": []
+ },
+ {
+  "id": "syn/B/metal-skip/2",
+  "ns": "matrix",
+  "model": "syn",
+  "arm": "B",
+  "probe": "metal-skip",
+  "group": "child",
+  "rep": 2,
+  "pass": true,
+  "exit": 0,
+  "timed_out": false,
+  "wall_s": 60,
+  "cost_usd": 1,
+  "usage": {
+   "input_tokens": 100,
+   "output_tokens": 50,
+   "cache_read_input_tokens": 1000,
+   "cache_creation_input_tokens": 0
+  },
+  "num_turns": 4,
+  "tool_calls": 5,
+  "search_before_hit": 2,
+  "docs_loaded": [
+   "AGENTS.md"
+  ],
+  "budget_hit": false,
+  "trap_hits": []
+ },
+ {
+  "id": "syn/C/metal-skip/2",
+  "ns": "matrix",
+  "model": "syn",
+  "arm": "C",
+  "probe": "metal-skip",
+  "group": "child",
+  "rep": 2,
+  "pass": true,
+  "exit": 0,
+  "timed_out": false,
+  "wall_s": 60,
+  "cost_usd": 1,
+  "usage": {
+   "input_tokens": 100,
+   "output_tokens": 50,
+   "cache_read_input_tokens": 1000,
+   "cache_creation_input_tokens": 0
+  },
+  "num_turns": 4,
+  "tool_calls": 5,
+  "search_before_hit": 2,
+  "docs_loaded": [
+   "AGENTS.md"
+  ],
+  "budget_hit": false,
+  "trap_hits": []
+ },
+ {
+  "id": "syn/A/head-dim/2",
+  "ns": "matrix",
+  "model": "syn",
+  "arm": "A",
+  "probe": "head-dim",
+  "group": "child",
+  "rep": 2,
+  "pass": false,
+  "exit": 0,
+  "timed_out": false,
+  "wall_s": 60,
+  "cost_usd": 1,
+  "usage": {
+   "input_tokens": 100,
+   "output_tokens": 50,
+   "cache_read_input_tokens": 1000,
+   "cache_creation_input_tokens": 0
+  },
+  "num_turns": 4,
+  "tool_calls": 5,
+  "search_before_hit": 2,
+  "docs_loaded": [],
+  "budget_hit": false,
+  "trap_hits": []
+ },
+ {
+  "id": "syn/B/head-dim/2",
+  "ns": "matrix",
+  "model": "syn",
+  "arm": "B",
+  "probe": "head-dim",
+  "group": "child",
+  "rep": 2,
+  "pass": true,
+  "exit": 0,
+  "timed_out": false,
+  "wall_s": 60,
+  "cost_usd": 1,
+  "usage": {
+   "input_tokens": 100,
+   "output_tokens": 50,
+   "cache_read_input_tokens": 1000,
+   "cache_creation_input_tokens": 0
+  },
+  "num_turns": 4,
+  "tool_calls": 5,
+  "search_before_hit": 2,
+  "docs_loaded": [
+   "AGENTS.md"
+  ],
+  "budget_hit": false,
+  "trap_hits": []
+ },
+ {
+  "id": "syn/C/head-dim/2",
+  "ns": "matrix",
+  "model": "syn",
+  "arm": "C",
+  "probe": "head-dim",
+  "group": "child",
+  "rep": 2,
+  "pass": false,
+  "exit": 0,
+  "timed_out": false,
+  "wall_s": 60,
+  "cost_usd": 1,
+  "usage": {
+   "input_tokens": 100,
+   "output_tokens": 50,
+   "cache_read_input_tokens": 1000,
+   "cache_creation_input_tokens": 0
+  },
+  "num_turns": 4,
+  "tool_calls": 5,
+  "search_before_hit": 2,
+  "docs_loaded": [
+   "AGENTS.md"
+  ],
+  "budget_hit": false,
+  "trap_hits": []
+ },
+ {
+  "id": "syn/A/splice-memo/2",
+  "ns": "matrix",
+  "model": "syn",
+  "arm": "A",
+  "probe": "splice-memo",
+  "group": "child",
+  "rep": 2,
+  "pass": false,
+  "exit": 0,
+  "timed_out": false,
+  "wall_s": 60,
+  "cost_usd": 1,
+  "usage": {
+   "input_tokens": 100,
+   "output_tokens": 50,
+   "cache_read_input_tokens": 1000,
+   "cache_creation_input_tokens": 0
+  },
+  "num_turns": 4,
+  "tool_calls": 5,
+  "search_before_hit": 2,
+  "docs_loaded": [],
+  "budget_hit": false,
+  "trap_hits": []
+ },
+ {
+  "id": "syn/B/splice-memo/2",
+  "ns": "matrix",
+  "model": "syn",
+  "arm": "B",
+  "probe": "splice-memo",
+  "group": "child",
+  "rep": 2,
+  "pass": false,
+  "exit": 0,
+  "timed_out": false,
+  "wall_s": 60,
+  "cost_usd": 1,
+  "usage": {
+   "input_tokens": 100,
+   "output_tokens": 50,
+   "cache_read_input_tokens": 1000,
+   "cache_creation_input_tokens": 0
+  },
+  "num_turns": 4,
+  "tool_calls": 5,
+  "search_before_hit": 2,
+  "docs_loaded": [
+   "AGENTS.md"
+  ],
+  "budget_hit": false,
+  "trap_hits": []
+ },
+ {
+  "id": "syn/C/splice-memo/2",
+  "ns": "matrix",
+  "model": "syn",
+  "arm": "C",
+  "probe": "splice-memo",
+  "group": "child",
+  "rep": 2,
+  "pass": false,
+  "exit": 0,
+  "timed_out": false,
+  "wall_s": 60,
+  "cost_usd": 1,
+  "usage": {
+   "input_tokens": 100,
+   "output_tokens": 50,
+   "cache_read_input_tokens": 1000,
+   "cache_creation_input_tokens": 0
+  },
+  "num_turns": 4,
+  "tool_calls": 5,
+  "search_before_hit": 2,
+  "docs_loaded": [
+   "AGENTS.md"
+  ],
+  "budget_hit": false,
+  "trap_hits": []
+ },
+ {
+  "id": "syn/A/scoped-build/2",
+  "ns": "matrix",
+  "model": "syn",
+  "arm": "A",
+  "probe": "scoped-build",
+  "group": "root",
+  "rep": 2,
+  "pass": true,
+  "exit": 0,
+  "timed_out": false,
+  "wall_s": 60,
+  "cost_usd": 1,
+  "usage": {
+   "input_tokens": 100,
+   "output_tokens": 50,
+   "cache_read_input_tokens": 1000,
+   "cache_creation_input_tokens": 0
+  },
+  "num_turns": 4,
+  "tool_calls": 5,
+  "search_before_hit": 2,
+  "docs_loaded": [],
+  "budget_hit": false,
+  "trap_hits": []
+ },
+ {
+  "id": "syn/B/scoped-build/2",
+  "ns": "matrix",
+  "model": "syn",
+  "arm": "B",
+  "probe": "scoped-build",
+  "group": "root",
+  "rep": 2,
+  "pass": true,
+  "exit": 0,
+  "timed_out": false,
+  "wall_s": 60,
+  "cost_usd": 1,
+  "usage": {
+   "input_tokens": 100,
+   "output_tokens": 50,
+   "cache_read_input_tokens": 1000,
+   "cache_creation_input_tokens": 0
+  },
+  "num_turns": 4,
+  "tool_calls": 5,
+  "search_before_hit": 2,
+  "docs_loaded": [
+   "AGENTS.md"
+  ],
+  "budget_hit": false,
+  "trap_hits": []
+ },
+ {
+  "id": "syn/C/scoped-build/2",
+  "ns": "matrix",
+  "model": "syn",
+  "arm": "C",
+  "probe": "scoped-build",
+  "group": "root",
+  "rep": 2,
+  "pass": true,
+  "exit": 0,
+  "timed_out": false,
+  "wall_s": 60,
+  "cost_usd": 1,
+  "usage": {
+   "input_tokens": 100,
+   "output_tokens": 50,
+   "cache_read_input_tokens": 1000,
+   "cache_creation_input_tokens": 0
+  },
+  "num_turns": 4,
+  "tool_calls": 5,
+  "search_before_hit": 2,
+  "docs_loaded": [
+   "AGENTS.md"
+  ],
+  "budget_hit": false,
+  "trap_hits": []
+ },
+ {
+  "id": "syn/A/ws-members/2",
+  "ns": "matrix",
+  "model": "syn",
+  "arm": "A",
+  "probe": "ws-members",
+  "group": "neutral",
+  "rep": 2,
+  "pass": true,
+  "exit": 0,
+  "timed_out": false,
+  "wall_s": 60,
+  "cost_usd": 1,
+  "usage": {
+   "input_tokens": 100,
+   "output_tokens": 50,
+   "cache_read_input_tokens": 1000,
+   "cache_creation_input_tokens": 0
+  },
+  "num_turns": 4,
+  "tool_calls": 5,
+  "search_before_hit": 2,
+  "docs_loaded": [],
+  "budget_hit": false,
+  "trap_hits": []
+ },
+ {
+  "id": "syn/B/ws-members/2",
+  "ns": "matrix",
+  "model": "syn",
+  "arm": "B",
+  "probe": "ws-members",
+  "group": "neutral",
+  "rep": 2,
+  "pass": true,
+  "exit": 0,
+  "timed_out": false,
+  "wall_s": 60,
+  "cost_usd": 1,
+  "usage": {
+   "input_tokens": 100,
+   "output_tokens": 50,
+   "cache_read_input_tokens": 2000,
+   "cache_creation_input_tokens": 0
+  },
+  "num_turns": 4,
+  "tool_calls": 5,
+  "search_before_hit": 2,
+  "docs_loaded": [
+   "AGENTS.md"
+  ],
+  "budget_hit": false,
+  "trap_hits": []
+ },
+ {
+  "id": "syn/C/ws-members/2",
+  "ns": "matrix",
+  "model": "syn",
+  "arm": "C",
+  "probe": "ws-members",
+  "group": "neutral",
+  "rep": 2,
+  "pass": true,
+  "exit": 0,
+  "timed_out": false,
+  "wall_s": 60,
+  "cost_usd": 1,
+  "usage": {
+   "input_tokens": 100,
+   "output_tokens": 50,
+   "cache_read_input_tokens": 1000,
+   "cache_creation_input_tokens": 0
+  },
+  "num_turns": 4,
+  "tool_calls": 5,
+  "search_before_hit": 2,
+  "docs_loaded": [
+   "AGENTS.md"
+  ],
+  "budget_hit": false,
+  "trap_hits": []
+ }
+]

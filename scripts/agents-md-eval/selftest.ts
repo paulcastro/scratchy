@@ -6,6 +6,7 @@ import { existsSync, mkdirSync, readFileSync, rmSync, watch, writeFileSync } fro
 import { join } from "path";
 import { claudeVersion, parseEvents } from "./claude";
 import { spend } from "./ledger";
+import { REPORT_CASES } from "./report-selftest";
 
 const EVAL = join(import.meta.dir, "eval.ts");
 type Ctx = { out: string; fakeLog: string };
@@ -125,6 +126,8 @@ export const CASES: Case[] = [
     check(r.code === 1 && r.out.includes("manifest mismatch") && launches(c) === 1, `exit ${r.code}\n${r.out}`);
   } },
 ];
+
+CASES.push(...REPORT_CASES);
 
 export async function selftest(): Promise<number> {
   const version = await claudeVersion();

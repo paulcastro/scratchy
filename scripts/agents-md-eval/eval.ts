@@ -6,7 +6,8 @@
 //   bun scripts/agents-md-eval/eval.ts run [--ns dry-run|matrix] [--model sonnet] [--reps 2] [--jobs 4] [--arms A,B,C] [--probes ids]
 //     (refuses unless preflight.json is ok for the current claude version; spend cap AMD_EVAL_CAP_USD, default 150)
 //   bun scripts/agents-md-eval/eval.ts selftest   (fake-launcher runner cases; costs nothing)
-//   grade|report|smoke: later todos
+//   bun scripts/agents-md-eval/eval.ts report [--ns matrix|dry-run]   (writes ${OUT}/<ns>/report.md with the pre-registered verdict)
+//   grade|smoke: later todos
 // Env: AMD_EVAL_BASE (default acc4046b), AMD_EVAL_DOCS_REF (default docs/agents-md),
 //      AMD_EVAL_OUT (default /tmp/scratchy-amd-eval).
 import { $ } from "bun";
@@ -15,6 +16,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { join } from "path";
 import { ARMS, materialize, resolveCommit, type Arm } from "./arms";
 import { preflight, preflightGate } from "./preflight";
+import { reportCmd } from "./report";
 import { run } from "./run";
 import { selftest } from "./selftest";
 
@@ -103,5 +105,6 @@ else if (cmd === "clean") await clean();
 else if (cmd === "preflight") await preflightCmd();
 else if (cmd === "run") await runCmd();
 else if (cmd === "selftest") process.exit(await selftest());
+else if (cmd === "report") process.exit(reportCmd(OUT, o.ns ?? "matrix"));
 else if (["grade", "report", "smoke"].includes(cmd)) die(`${cmd}: not implemented`, 2);
 else die("usage: eval.ts run|grade|report|selftest|preflight|materialize|clean|smoke", 2);
