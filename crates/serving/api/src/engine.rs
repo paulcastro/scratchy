@@ -4360,9 +4360,10 @@ fn placeholder_text(token_ids: &[u32]) -> String {
 /// A request can finish with `completion_tokens: 50`, `finish_reason: "length"` and `"text": ""`. That is
 /// not a detokenizer fault: `decode_next` returns `""` for any id that decodes to nothing under
 /// `skip_special_tokens` (`string.len() > prefix.len()` fails), so fifty SPECIAL ids render as fifty
-/// nothings. EOS is excluded by construction — it would have stopped generation at the first token with
-/// `finish_reason: "stop"` — so a long empty completion means the sampler is landing on non-EOS special
-/// ids, i.e. the logits are junk. That is a BACKEND bug, and the response body cannot express it: the ids
+/// nothings. Without `ignore_eos`, EOS would have stopped generation at the first token with
+/// `finish_reason: "stop"`, so a long empty completion means the sampler is landing on non-EOS special
+/// ids, i.e. the logits are junk. With `ignore_eos` it can be EOS repeated, which is legitimate (#937:
+/// nemotron-3-super greedily picks `<|im_end|>` on random-token prompts). Otherwise the response body cannot express it: the ids
 /// never reach the client, so the failure reads as "the server returned nothing".
 ///
 /// So say the ids. Once per finished request, only when text is empty and tokens exist, bounded so a long
@@ -4381,8 +4382,9 @@ pub(crate) fn warn_if_empty_text(request_id: &str, text: &str, token_ids: &[u32]
         first_ids = ?head,
         all_ids_identical = all_same,
         "generated tokens rendered to EMPTY text — every id decoded to nothing under \
-         skip_special_tokens, so these are non-EOS SPECIAL ids and the sampler's logits are suspect \
-         (a backend problem, not detokenization). `all_ids_identical` distinguishes a stuck argmax from \
+         skip_special_tokens, so these are SPECIAL ids: EOS repeated under ignore_eos is legitimate \
+         (#937), any other special id means the sampler's logits are suspect (a backend problem, not \
+         detokenization). `all_ids_identical` distinguishes a stuck argmax from \
          a spread of special ids."
     );
 }

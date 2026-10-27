@@ -364,6 +364,9 @@ fn chunk_text(chunk: &serde_json::Value) -> Option<&str> {
 /// mlx_lm.server does this whenever the tokens decode to no printable text
 /// (random-token prompts often make models emit undecodable byte
 /// fragments), holding them back and flushing one empty final chunk.
+/// A model can also emit only special tokens, which decode to empty text:
+/// nemotron-3-super repeats its end-of-sequence token under `ignore_eos` on
+/// random-token prompts (#937).
 fn is_unstreamed(r: &RequestResult) -> bool {
     r.output_tokens > 1 && r.chunks <= 1
 }
