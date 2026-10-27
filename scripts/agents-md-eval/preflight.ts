@@ -6,7 +6,8 @@ import { $ } from "bun";
 import { appendFileSync, existsSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from "fs";
 import { join } from "path";
 import { ARMS, docList, materialize, resolveCommit, type Arm } from "./arms";
-import { claudeVersion, docsLoaded, loadsFromHookLog, parseEvents, runClaude, writeSettings } from "./claude";
+import { claudeVersion, docsLoaded, loadsFromHookLog, runClaude, writeSettings } from "./claude";
+import { reserve, spend } from "./ledger";
 
 const REPO = join(import.meta.dir, "../..");
 const ASK = "list every token in your context that starts with CANARY-.";
@@ -34,9 +35,6 @@ export async function preflightGate(out: string): Promise<string | null> {
   if (pf.claude_version !== v) return `preflight not ok: recorded for claude '${pf.claude_version}', current is '${v}'`;
   return null;
 }
-
-const ledgerSpent = (ledger: string) =>
-  existsSync(ledger) ? parseEvents(readFileSync(ledger, "utf8")).reduce((s, e) => s + (e.cost_usd ?? 1), 0) : 0;
 
 export async function preflight(o: { out: string; base: string; docsRef: string; addWorktree: (wt: string) => void; dropWorktree: (wt: string) => void }): Promise<number> {
   const { out } = o;
@@ -69,10 +67,12 @@ export async function preflight(o: { out: string; base: string; docsRef: string;
       const real = realpathSync(wt);
       const res: Record<string, unknown> = { worktree: wt, canary_files: Object.fromEntries(canaryOf) };
       for (const p of Object.keys(PROMPTS) as P[]) {
-        if (ledgerSpent(ledger) + 1 > cap) throw new Error(`cap reached: $${ledgerSpent(ledger).toFixed(2)} of $${cap}`);
+        const meta = { ns: "preflight", arm, prompt: p, no_shim: noShim };
+        const rid = reserve(ledger, cap, meta);
+        if (!rid) throw new Error(`cap reached: $${spend(ledger).total.toFixed(2)} of $${cap}`);
         const call = await runClaude({
-          prompt: PROMPTS[p], wt, stem: join(dir, `${arm}-${p}`), settings, ledger,
-          ledgerExtra: { ns: "preflight", arm, prompt: p, no_shim: noShim },
+          prompt: PROMPTS[p], wt, stem: join(dir, `${arm}-${p}`), settings, ledger, rid,
+          ledgerExtra: meta,
         });
         const logLines = readFileSync(call.loaded_log, "utf8").split("\n");
         const loads = loadsFromHookLog(logLines.join("\n"), real);

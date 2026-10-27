@@ -3,7 +3,10 @@
 //   bun scripts/agents-md-eval/eval.ts materialize --arm A|B|C --dir <worktree>
 //   bun scripts/agents-md-eval/eval.ts clean
 //   bun scripts/agents-md-eval/eval.ts preflight   (writes ${OUT}/preflight.json; exit 1 unless every arm's docs load)
-//   run: refuses unless preflight.json is ok for the current claude version; grade|report|selftest|smoke: later todos
+//   bun scripts/agents-md-eval/eval.ts run [--ns dry-run|matrix] [--model sonnet] [--reps 2] [--jobs 4] [--arms A,B,C] [--probes ids]
+//     (refuses unless preflight.json is ok for the current claude version; spend cap AMD_EVAL_CAP_USD, default 150)
+//   bun scripts/agents-md-eval/eval.ts selftest   (fake-launcher runner cases; costs nothing)
+//   grade|report|smoke: later todos
 // Env: AMD_EVAL_BASE (default acc4046b), AMD_EVAL_DOCS_REF (default docs/agents-md),
 //      AMD_EVAL_OUT (default /tmp/scratchy-amd-eval).
 import { $ } from "bun";
@@ -12,6 +15,8 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { join } from "path";
 import { ARMS, materialize, resolveCommit, type Arm } from "./arms";
 import { preflight, preflightGate } from "./preflight";
+import { run } from "./run";
+import { selftest } from "./selftest";
 
 const REPO = join(import.meta.dir, "../..");
 const OUT = process.env.AMD_EVAL_OUT ?? "/tmp/scratchy-amd-eval";
@@ -76,12 +81,27 @@ async function preflightCmd() {
 async function runCmd() {
   const refusal = await preflightGate(OUT);
   if (refusal) die(refusal);
-  die("run: not implemented (todo 5)", 2);
+  const arms = (o.arms ?? ARMS.join(",")).split(",") as Arm[];
+  const bad = arms.filter((a) => !ARMS.includes(a));
+  if (bad.length) die(`--arms: unknown arm(s) ${bad.join(",")}`);
+  const ns = o.ns ?? "matrix";
+  if (!["dry-run", "matrix"].includes(ns)) die(`--ns must be dry-run or matrix (got '${ns}')`);
+  const edit = (f: (w: string[]) => string[]) => {
+    const m = readManifest();
+    writeFileSync(MANIFEST, JSON.stringify({ ...m, worktrees: f(m.worktrees) }, null, 2));
+  };
+  const code = await run({
+    out: OUT, base: BASE, docsRef: DOCS_REF, ns, model: o.model ?? "sonnet",
+    reps: Number(o.reps ?? 2), jobs: Number(o.jobs ?? 4), arms, probes: o.probes ? o.probes.split(",") : null,
+    addWorktree: (wt) => edit((w) => [...new Set([...w, wt])]),
+  }).catch((e) => die(`run: ${e.message ?? e}`));
+  process.exit(code);
 }
 
 if (cmd === "materialize") await materializeCmd();
 else if (cmd === "clean") await clean();
 else if (cmd === "preflight") await preflightCmd();
 else if (cmd === "run") await runCmd();
-else if (["grade", "report", "selftest", "smoke"].includes(cmd)) die(`${cmd}: not implemented`, 2);
+else if (cmd === "selftest") process.exit(await selftest());
+else if (["grade", "report", "smoke"].includes(cmd)) die(`${cmd}: not implemented`, 2);
 else die("usage: eval.ts run|grade|report|selftest|preflight|materialize|clean|smoke", 2);

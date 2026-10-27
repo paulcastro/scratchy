@@ -18,6 +18,13 @@ import { dirname, join, relative } from "path";
 
 export const CALL_TIMEOUT_MS = Number(process.env.AMD_EVAL_CALL_TIMEOUT_MS ?? 300_000);
 const HOOK_CMD = `cat >> "$AMD_LOADED_LOG"; echo >> "$AMD_LOADED_LOG"`;
+const FAKE = join(import.meta.dir, "fake-claude.ts");
+
+// Calls run in their own process group so a timeout or a harness SIGINT kills claude and every
+// child it spawned (an orphan holding stdout would otherwise hang the pipe read forever).
+const live = new Set<number>();
+const killGroup = (pid: number) => { try { process.kill(-pid, "SIGKILL"); } catch {} };
+process.once("SIGINT", () => { for (const pid of live) killGroup(pid); process.exit(130); });
 
 export async function claudeVersion(): Promise<string> {
   const p = Bun.spawn(["claude", "--version"], { stdout: "pipe", stderr: "pipe" });
@@ -49,12 +56,14 @@ export type CallResult = {
   result: any | null;
   transcript: string;
   loaded_log: string;
+  stderr: string;
 };
 
 /** One headless claude call in `wt`; transcript + hook log land at `<stem>.jsonl` / `<stem>.loaded.jsonl`. */
 export async function runClaude(o: {
   prompt: string; wt: string; stem: string; settings: string; model?: string;
   env?: Record<string, string>; ledger: string; ledgerExtra: Record<string, unknown>;
+  rid: string; timeoutMs?: number;
 }): Promise<CallResult> {
   const transcript = `${o.stem}.jsonl`, loaded_log = `${o.stem}.loaded.jsonl`;
   mkdirSync(dirname(o.stem), { recursive: true });
@@ -64,24 +73,27 @@ export async function runClaude(o: {
   env.CLAUDE_CODE_DISABLE_AUTO_MEMORY = "1";
   env.AMD_LOADED_LOG = loaded_log;
   const t0 = performance.now();
+  const launcher = env.AMD_EVAL_FAKE_CLAUDE === "1" ? [process.execPath, FAKE] : ["claude"];
   const p = Bun.spawn(
-    ["claude", "-p", o.prompt, "--model", o.model ?? "sonnet", "--output-format", "stream-json", "--verbose",
+    [...launcher, "-p", o.prompt, "--model", o.model ?? "sonnet", "--output-format", "stream-json", "--verbose",
       "--dangerously-skip-permissions", "--no-session-persistence", "--max-budget-usd", "1",
       "--setting-sources", "project", "--settings", o.settings],
-    { cwd: o.wt, env, stdin: "ignore", stdout: "pipe", stderr: "pipe" },
+    { cwd: o.wt, env, stdin: "ignore", stdout: "pipe", stderr: "pipe", detached: true },
   );
+  live.add(p.pid);
   let timed_out = false;
-  const timer = setTimeout(() => { timed_out = true; p.kill("SIGKILL"); }, CALL_TIMEOUT_MS);
+  const timer = setTimeout(() => { timed_out = true; killGroup(p.pid); }, o.timeoutMs ?? CALL_TIMEOUT_MS);
   const [stdout, stderr] = await Promise.all([new Response(p.stdout).text(), new Response(p.stderr).text()]);
   const exit = await p.exited;
   clearTimeout(timer);
+  live.delete(p.pid);
   const wall_s = (performance.now() - t0) / 1000;
   writeFileSync(transcript, stdout);
   if (stderr.trim()) writeFileSync(`${o.stem}.stderr.txt`, stderr);
   const result = parseEvents(stdout).findLast((e) => e.type === "result") ?? null;
   const cost_usd = typeof result?.total_cost_usd === "number" ? result.total_cost_usd : null;
-  appendFileSync(o.ledger, JSON.stringify({ ...o.ledgerExtra, cost_usd, exit, timed_out, wall_s, ts: new Date().toISOString() }) + "\n");
-  return { exit, timed_out, wall_s, cost_usd, result, transcript, loaded_log };
+  appendFileSync(o.ledger, JSON.stringify({ kind: "settle", rid: o.rid, ...o.ledgerExtra, cost_usd, exit, timed_out, wall_s, ts: new Date().toISOString() }) + "\n");
+  return { exit, timed_out, wall_s, cost_usd, result, transcript, loaded_log, stderr };
 }
 
 export const parseEvents = (jsonl: string): any[] =>
