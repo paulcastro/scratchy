@@ -10,6 +10,7 @@ import { existsSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from
 import { join } from "path";
 import { ARMS, materialize, resolveCommit, type Arm } from "./arms";
 import { claudeVersion, docsLoaded, loadsFromHookLog, parseEvents, runClaude, writeSettings } from "./claude";
+import { frozenHashes } from "./freeze";
 import { reserve, settleUnlaunched, spend } from "./ledger";
 
 const REPO = join(import.meta.dir, "../..");
@@ -35,7 +36,7 @@ async function identity(o: RunOpts) {
   return {
     base: await resolveCommit(o.base), docs: await resolveCommit(o.docsRef), model: o.model, model_resolved: resolved,
     claude_version: await claudeVersion(), bun_version: Bun.version, rustc_version: await cmdOut(["rustc", "--version"]),
-    files,
+    files, frozen: frozenHashes(),
   };
 }
 
@@ -83,7 +84,7 @@ export async function run(o: RunOpts): Promise<number> {
   let inflight = 0, capHit = false, next = 0, launched = 0, skipped = 0;
   let waiters: (() => void)[] = [];
   const done = () => { inflight--; const w = waiters; waiters = []; w.forEach((f) => f()); };
-  const tally = { nonzero: 0, timed_out: 0, budget_hit: 0 };
+  const tally = { nonzero: 0, timed_out: 0, budget_hit: 0, no_result: 0 };
 
   const runOne = async ({ rep, probe, arm }: Job) => {
     const rid0 = `${o.model}/${arm}/${probe.id}/${rep}`;
@@ -139,6 +140,7 @@ export async function run(o: RunOpts): Promise<number> {
       if (res.exit !== 0) tally.nonzero++;
       if (res.timed_out) tally.timed_out++;
       if (res.budget_hit) tally.budget_hit++;
+      if (res.result_subtype === null) tally.no_result++;
       console.log(`${o.ns}/${rid0} exit=${res.exit}${res.timed_out ? " TIMED_OUT" : ""}${res.budget_hit ? " BUDGET_HIT" : ""} ${res.wall_s.toFixed(0)}s $${res.cost_usd?.toFixed(3) ?? "?"}`);
     } finally {
       done();
@@ -155,6 +157,6 @@ export async function run(o: RunOpts): Promise<number> {
 
   const s = spend(ledger);
   if (capHit) console.log(`cap reached: $${s.total.toFixed(2)} (settled $${s.settled.toFixed(2)} + open reservations $${s.open.toFixed(2)}) of cap $${cap}`);
-  console.log(`run ${o.ns}: ${jobs.length} job(s), ${launched} launched, ${skipped} resumed, ${tally.nonzero} nonzero exit, ${tally.timed_out} timed out, ${tally.budget_hit} budget_hit, ${errors.length} harness error(s); ledger $${s.settled.toFixed(2)} settled + $${s.open.toFixed(2)} open`);
+  console.log(`run ${o.ns}: ${jobs.length} job(s), ${launched} launched, ${skipped} resumed, ${tally.nonzero} nonzero exit, ${tally.timed_out} timed out, ${tally.budget_hit} budget_hit, ${tally.no_result} no result event, ${errors.length} harness error(s); ledger $${s.settled.toFixed(2)} settled + $${s.open.toFixed(2)} open`);
   return errors.length ? 1 : capHit ? 3 : 0;
 }

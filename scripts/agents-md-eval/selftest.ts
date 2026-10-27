@@ -86,7 +86,7 @@ export const CASES: Case[] = [
     const [f] = await results(c);
     const res = JSON.parse(readFileSync(f, "utf8"));
     check(res.timed_out === true && res.cost_usd === null && res.exit !== 0, `result ${JSON.stringify(res)}`);
-    check(r.out.includes("1 timed out"), `summary hides the timeout\n${r.out}`);
+    check(r.out.includes("1 timed out") && r.out.includes("1 no result event"), `summary hides the timeout\n${r.out}`);
     check(openRids(c).length === 1, "timed-out reservation released");
     const left = await $`pgrep -f "sleep 600"`.quiet().nothrow();
     check(left.exitCode !== 0, `hung grandchild survived: ${left.stdout}`);
@@ -124,6 +124,15 @@ export const CASES: Case[] = [
     writeFileSync(f, JSON.stringify({ ...JSON.parse(readFileSync(f, "utf8")), manifest_hash: "stale" }));
     const r = await runEval(c, ["--reps", "1", "--probes", "ws-members", "--arms", "A,B"]);
     check(r.code === 1 && r.out.includes("manifest mismatch") && launches(c) === 1, `exit ${r.code}\n${r.out}`);
+  } },
+  { name: "run --ns matrix refuses without the frozen manifest", fn: async (c) => {
+    const p = Bun.spawn([process.execPath, EVAL, "run", "--ns", "matrix", ...ARGS3], {
+      env: { ...process.env, AMD_EVAL_OUT: c.out, AMD_EVAL_FAKE_CLAUDE: "1", AMD_EVAL_FAKE_LOG: c.fakeLog, AMD_EVAL_FROZEN: join(c.out, "no-frozen.json") },
+      stdout: "pipe", stderr: "pipe",
+    });
+    const out = (await new Response(p.stdout).text()) + (await new Response(p.stderr).text());
+    const code = await p.exited;
+    check(code === 1 && out.includes("frozen") && launches(c) === 0, `exit ${code}\n${out}`);
   } },
 ];
 

@@ -70,7 +70,7 @@
       "check": {
         "type": "regex_all",
         "patterns": [
-          "(-p|--package)[\\s=]+scratchy-serving-scheduler\\b",
+          "(-p|--package)[\\s=]+scratchy-serving-scheduler(?![\\w-])",
           "--test[\\s=]+zz_kv_extent_spans_the_worker_and_the_allocator\\b"
         ]
       },

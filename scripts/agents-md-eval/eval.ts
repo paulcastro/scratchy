@@ -8,14 +8,17 @@
 //   bun scripts/agents-md-eval/eval.ts selftest   (fake-launcher runner cases, then grader/trap/detector cases; costs nothing)
 //   bun scripts/agents-md-eval/eval.ts grade [--ns matrix|dry-run]   (writes ${OUT}/<ns>/grades.json)
 //   bun scripts/agents-md-eval/eval.ts report [--ns matrix|dry-run]   (writes ${OUT}/<ns>/report.md with the pre-registered verdict)
-//   smoke: later todo
+//   bun scripts/agents-md-eval/eval.ts freeze   (writes frozen.json: probes, grader, group labels, VERDICT_RULES hashes; commit it)
+//   bun scripts/agents-md-eval/eval.ts smoke [--ns matrix] [run options]   (preflight -> selftest -> run -> grade -> report; stops at the first failure)
+//   `run --ns matrix` refuses unless frozen.json matches and is committed (freeze.ts).
 // Env: AMD_EVAL_BASE (default acc4046b), AMD_EVAL_DOCS_REF (default docs/agents-md),
-//      AMD_EVAL_OUT (default /tmp/scratchy-amd-eval).
+//      AMD_EVAL_OUT (default /tmp/scratchy-amd-eval), AMD_EVAL_CAP_USD (default 150).
 import { $ } from "bun";
 import { parseArgs } from "util";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { join } from "path";
 import { ARMS, materialize, resolveCommit, type Arm } from "./arms";
+import { frozenGate, writeFrozen } from "./freeze";
 import { gradeCmd } from "./grade";
 import { gradeSelftest } from "./grade-selftest";
 import { preflight, preflightGate } from "./preflight";
@@ -69,21 +72,21 @@ async function clean() {
   console.log(`clean: ${m.worktrees.length} harness worktree(s) listed in ${MANIFEST}`);
 }
 
-async function preflightCmd() {
+const editWorktrees = (f: (w: string[]) => string[]) => {
+  const m = readManifest();
+  writeFileSync(MANIFEST, JSON.stringify({ ...m, worktrees: f(m.worktrees) }, null, 2));
+};
+
+async function preflightCmd(): Promise<number> {
   mkdirSync(OUT, { recursive: true });
-  const edit = (f: (w: string[]) => string[]) => {
-    const m = readManifest();
-    writeFileSync(MANIFEST, JSON.stringify({ ...m, worktrees: f(m.worktrees) }, null, 2));
-  };
-  const code = await preflight({
+  return preflight({
     out: OUT, base: BASE, docsRef: DOCS_REF,
-    addWorktree: (wt) => edit((w) => [...new Set([...w, wt])]),
-    dropWorktree: (wt) => edit((w) => w.filter((x) => x !== wt)),
-  }).catch((e) => die(`preflight: ${e.message ?? e}`));
-  process.exit(code);
+    addWorktree: (wt) => editWorktrees((w) => [...new Set([...w, wt])]),
+    dropWorktree: (wt) => editWorktrees((w) => w.filter((x) => x !== wt)),
+  }).catch((e) => { console.error(`preflight: ${e.message ?? e}`); return 1; });
 }
 
-async function runCmd() {
+async function runCmd(): Promise<number> {
   const refusal = await preflightGate(OUT);
   if (refusal) die(refusal);
   const arms = (o.arms ?? ARMS.join(",")).split(",") as Arm[];
@@ -91,24 +94,38 @@ async function runCmd() {
   if (bad.length) die(`--arms: unknown arm(s) ${bad.join(",")}`);
   const ns = o.ns ?? "matrix";
   if (!["dry-run", "matrix"].includes(ns)) die(`--ns must be dry-run or matrix (got '${ns}')`);
-  const edit = (f: (w: string[]) => string[]) => {
-    const m = readManifest();
-    writeFileSync(MANIFEST, JSON.stringify({ ...m, worktrees: f(m.worktrees) }, null, 2));
-  };
-  const code = await run({
+  if (ns === "matrix") { const r = await frozenGate(); if (r) die(r); }
+  const edit = editWorktrees;
+  return run({
     out: OUT, base: BASE, docsRef: DOCS_REF, ns, model: o.model ?? "sonnet",
     reps: Number(o.reps ?? 2), jobs: Number(o.jobs ?? 4), arms, probes: o.probes ? o.probes.split(",") : null,
     addWorktree: (wt) => edit((w) => [...new Set([...w, wt])]),
   }).catch((e) => die(`run: ${e.message ?? e}`));
-  process.exit(code);
+}
+
+const selftestCmd = async () => (await selftest()) | (await gradeSelftest(OUT, BASE));
+
+async function smoke(): Promise<number> {
+  const ns = o.ns ?? "matrix";
+  const steps: [string, () => Promise<number> | number][] = [
+    ["preflight", preflightCmd], ["selftest", selftestCmd], ["run", runCmd],
+    ["grade", () => gradeCmd(OUT, BASE, ns)], ["report", () => reportCmd(OUT, ns)],
+  ];
+  for (const [name, step] of steps) {
+    console.log(`== smoke: ${name}`);
+    const code = await step();
+    if (code !== 0) { console.error(`smoke: ${name} exited ${code}; stopping`); return code; }
+  }
+  return 0;
 }
 
 if (cmd === "materialize") await materializeCmd();
 else if (cmd === "clean") await clean();
-else if (cmd === "preflight") await preflightCmd();
-else if (cmd === "run") await runCmd();
-else if (cmd === "selftest") process.exit((await selftest()) | (await gradeSelftest(OUT, BASE)));
+else if (cmd === "preflight") process.exit(await preflightCmd());
+else if (cmd === "run") process.exit(await runCmd());
+else if (cmd === "selftest") process.exit(await selftestCmd());
 else if (cmd === "grade") process.exit(await gradeCmd(OUT, BASE, o.ns ?? "matrix"));
 else if (cmd === "report") process.exit(reportCmd(OUT, o.ns ?? "matrix"));
-else if (["smoke"].includes(cmd)) die(`${cmd}: not implemented`, 2);
-else die("usage: eval.ts run|grade|report|selftest|preflight|materialize|clean|smoke", 2);
+else if (cmd === "freeze") console.log(JSON.stringify(writeFrozen(), null, 2));
+else if (cmd === "smoke") process.exit(await smoke());
+else die("usage: eval.ts run|grade|report|selftest|preflight|materialize|clean|freeze|smoke", 2);
