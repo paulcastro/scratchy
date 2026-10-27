@@ -1,0 +1,350 @@
+{
+  "probes": [
+    {
+      "id": "metal-skip",
+      "group": "child",
+      "kind": "answer",
+      "scope_dir": "crates/targets/metal",
+      "prompt": "Write the first statements a new Metal kernel integration test should use to skip cleanly on a host without a Metal 4 GPU.",
+      "answer_format": "ANSWER: <the statements, on one line>",
+      "check": {
+        "type": "regex_all",
+        "patterns": [
+          "let Some\\(\\w+\\) = detect_device\\(\\) else",
+          "skipping: no Metal 4 GPU"
+        ]
+      },
+      "key": "ANSWER: let Some(dev) = detect_device() else { eprintln!(\"skipping: no Metal 4 GPU\"); return; };",
+      "key_evidence": [
+        "crates/targets/metal/tests/affine_gather_qmv_test.rs:180: let Some(mdev) = detect_device() else {",
+        "crates/targets/metal/tests/affine_gather_qmv_test.rs:181: eprintln!(\"skipping: no Metal 4 GPU\");",
+        "crates/targets/metal/src/lib.rs:319: pub use device::{MetalDevice, detect_device, metal4_available};"
+      ]
+    },
+    {
+      "id": "head-dim",
+      "group": "child",
+      "kind": "answer",
+      "scope_dir": "crates/targets/metal",
+      "prompt": "To support head dim 192 in Metal paged attention, which file and which item do you edit? Do not edit anything.",
+      "answer_format": "ANSWER: file=<path> item=<name>",
+      "check": {
+        "type": "regex_all",
+        "patterns": [
+          "file=\\S*crates/targets/metal/build\\.rs",
+          "item=\\S*STEEL_PAGED_HEAD_DIMS"
+        ]
+      },
+      "key": "ANSWER: file=crates/targets/metal/build.rs item=STEEL_PAGED_HEAD_DIMS",
+      "key_evidence": [
+        "crates/targets/metal/build.rs:52: const STEEL_PAGED_HEAD_DIMS: &[(u32, u32)] = &[(64, 16), (96, 16), (128, 32), (256, 16)];"
+      ]
+    },
+    {
+      "id": "splice-memo",
+      "group": "child",
+      "kind": "answer",
+      "scope_dir": "crates/triton/splice",
+      "prompt": "In scratchy-triton-splice, which function builds the kernel compile-memo key, and does the key include the full kernel source text?",
+      "answer_format": "ANSWER: fn=<name> full_source=yes|no",
+      "check": {
+        "type": "regex_all",
+        "patterns": [
+          "fn=\\S*memo_key",
+          "full_source=yes"
+        ]
+      },
+      "key": "ANSWER: fn=memo_key full_source=yes",
+      "key_evidence": [
+        "crates/triton/splice/src/lib.rs:2571: fn memo_key(src: &str, spec: &KernelSpec, grid: &[i64]) -> Option<String> {",
+        "crates/triton/splice/src/lib.rs:2640: key.push_str(src);"
+      ]
+    },
+    {
+      "id": "seam-test",
+      "group": "child",
+      "kind": "answer",
+      "scope_dir": "crates/serving/scheduler",
+      "prompt": "Give the exact cargo command that runs only the scheduler's cross-crate test for the worker/allocator KV-extent seam.",
+      "answer_format": "ANSWER: <the cargo command>",
+      "check": {
+        "type": "regex_all",
+        "patterns": [
+          "-p\\s+scratchy-serving-scheduler\\b",
+          "--test\\s+zz_kv_extent_spans_the_worker_and_the_allocator\\b"
+        ]
+      },
+      "key": "ANSWER: cargo test -p scratchy-serving-scheduler --test zz_kv_extent_spans_the_worker_and_the_allocator",
+      "key_evidence": [
+        "crates/serving/scheduler/tests/zz_kv_extent_spans_the_worker_and_the_allocator.rs:54: #[test]",
+        "crates/serving/scheduler/Cargo.toml:2: name = \"scratchy-serving-scheduler\""
+      ]
+    },
+    {
+      "id": "emit-model",
+      "group": "child",
+      "kind": "answer",
+      "scope_dir": "crates/compiler/macros",
+      "prompt": "In scratchy-forward-compiler-macro, which function emits the model's Weights struct and forward fns, and in which file?",
+      "answer_format": "ANSWER: file=<path> fn=<name>",
+      "check": {
+        "type": "regex_all",
+        "patterns": [
+          "file=\\S*macros/src/codegen\\.rs",
+          "fn=\\S*emit_model\\b"
+        ]
+      },
+      "key": "ANSWER: file=crates/compiler/macros/src/codegen.rs fn=emit_model",
+      "key_evidence": [
+        "crates/compiler/macros/src/codegen.rs:13626: pub fn emit_model(",
+        "crates/compiler/macros/src/codegen.rs:13682: emit_weights_struct(",
+        "crates/compiler/macros/src/codegen.rs:15697: pub unsafe fn forward("
+      ]
+    },
+    {
+      "id": "weight-bindings",
+      "group": "child",
+      "kind": "answer",
+      "scope_dir": "crates/compiler/macros",
+      "prompt": "For the metal and spyre targets, which single source file produces the weight accessor set?",
+      "answer_format": "ANSWER: <path>",
+      "check": {
+        "type": "regex_all",
+        "patterns": [
+          "ANSWER:.*weight_bindings\\.rs"
+        ]
+      },
+      "key": "ANSWER: crates/compiler/macros/src/weight_bindings.rs",
+      "key_evidence": [
+        "crates/compiler/macros/src/lib.rs:96: // Gated to the targets that consume it: metal (via `emit_weight_bindings` /",
+        "crates/compiler/macros/src/codegen.rs:13777: (Some(l), Some(t)) => crate::weight_bindings::emit_weight_bindings(l, program, t)"
+      ]
+    },
+    {
+      "id": "scoped-build",
+      "group": "root",
+      "kind": "answer",
+      "scope_dir": "crates/cli",
+      "prompt": "Give the cargo command to build the scr CLI for Metal with only the smollm2-135m model. Do not run it.",
+      "answer_format": "ANSWER: <the cargo command>",
+      "check": {
+        "type": "regex_all",
+        "patterns": [
+          "-p\\s+scratchy-cli\\b",
+          "metal",
+          "model/smollm2-135m"
+        ],
+        "not_patterns": [
+          "model/all\\b|model/llama\\b(?!-)"
+        ],
+        "not_on": "answer_line"
+      },
+      "key": "ANSWER: cargo build -p scratchy-cli --features metal,model/smollm2-135m",
+      "key_evidence": [
+        "crates/cli/scr/Cargo.toml:2: name = \"scratchy-cli\"",
+        "crates/cli/scr/Cargo.toml:84: metal = [\"metal-base\", \"model?/turboquant\", \"model?/mtp-heads\"]",
+        "crates/cli/scr/Cargo.toml:154: model = { package = \"scratchy-models\", path = \"../../models/arch\", optional = true, default-features = false }",
+        "crates/models/arch/Cargo.toml:223: \"smollm2-135m\" = [\"arch-llama\"]"
+      ]
+    },
+    {
+      "id": "superdsc-deps",
+      "group": "root",
+      "kind": "answer",
+      "scope_dir": "crates/targets/spyre/ktir/ktir-superdsc",
+      "prompt": "Which crates is ktir-superdsc allowed to depend on (normal deps)?",
+      "answer_format": "ANSWER: deps=<comma list>",
+      "check": {
+        "type": "set_eq",
+        "field": "deps",
+        "values": [
+          "ktir-core",
+          "half",
+          "serde",
+          "serde_json"
+        ],
+        "normalize": "underscore_to_dash"
+      },
+      "key": "ANSWER: deps=ktir-core,half,serde,serde_json",
+      "key_evidence": [
+        "crates/targets/spyre/ktir/ktir-superdsc/Cargo.toml:30: serde = { workspace = true, features = [\"derive\"] }",
+        "crates/targets/spyre/ktir/ktir-superdsc/Cargo.toml:40: serde_json = { workspace = true }",
+        "crates/targets/spyre/ktir/ktir-superdsc/Cargo.toml:42: half = { workspace = true }",
+        "crates/targets/spyre/ktir/ktir-superdsc/Cargo.toml:50: ktir-core = { path = \"../ktir-core\" }"
+      ]
+    },
+    {
+      "id": "arch-count",
+      "group": "root",
+      "kind": "answer",
+      "scope_dir": "crates/models/arch",
+      "prompt": "After adding a new architecture DSL file, which test file holds a count you must update?",
+      "answer_format": "ANSWER: <path>",
+      "check": {
+        "type": "regex_all",
+        "patterns": [
+          "ANSWER:.*crates/compiler/macros/tests/arch_declarations\\.rs"
+        ]
+      },
+      "key": "ANSWER: crates/compiler/macros/tests/arch_declarations.rs",
+      "key_evidence": [
+        "crates/compiler/macros/tests/arch_declarations.rs:206: assert_eq!(seen, 31, \"expected 31 DSL files, found {seen}\");"
+      ]
+    },
+    {
+      "id": "commit-scope",
+      "group": "root",
+      "kind": "answer",
+      "scope_dir": "crates/targets/metal",
+      "prompt": "What commit message prefix should a bug fix in the Metal allocator use?",
+      "answer_format": "ANSWER: <prefix>",
+      "check": {
+        "type": "regex_all",
+        "patterns": [
+          "ANSWER:\\s*`?fix\\(metal\\):"
+        ]
+      },
+      "key": "ANSWER: fix(metal):",
+      "key_evidence": [
+        "CLAUDE.md:109: both, scoped to the crate or area touched (`fix(metal): ...`).",
+        "git log acc4046b -300 --format=%s: 7 subjects start with fix(metal): (e.g. fix(metal): build one pipeline state at a time in the process (#899))"
+      ]
+    },
+    {
+      "id": "new-opcode",
+      "group": "cross",
+      "kind": "answer",
+      "scope_dir": "crates/compiler/subtile",
+      "prompt": "List every file that must change to add a new tape opcode that lowers on both metal and spyre. Do not edit anything.",
+      "answer_format": "ANSWER: files=<comma list>",
+      "check": {
+        "type": "regex_all",
+        "patterns": [
+          "crates/compiler/subtile/src/subtile_ir\\.rs",
+          "crates/targets/metal/(compiler/src/steps_from_tape|src/op_abi)\\.rs",
+          "crates/targets/spyre/src/lower_subtile_tape_to_(ktir|superdsc)\\.rs"
+        ]
+      },
+      "key": "ANSWER: files=crates/compiler/subtile/src/subtile_ir.rs,crates/compiler/subtile/src/ops.rs,crates/targets/metal/compiler/src/steps_from_tape.rs,crates/targets/metal/src/op_abi.rs,crates/targets/spyre/src/lower_subtile_tape_to_ktir.rs,crates/targets/spyre/src/op_abi.rs",
+      "key_evidence": [
+        "crates/compiler/subtile/src/subtile_ir.rs:1100: RmsNorm { eps: f32, gain: GainConvention },",
+        "crates/compiler/subtile/src/ops.rs:12: //! Adding an op = adding its variant (with its prose docs) and ONE row here. Every generated",
+        "crates/targets/metal/compiler/src/steps_from_tape.rs:1982: L::RmsNorm { gain, .. } => self.norm(i, gain)?,",
+        "crates/targets/metal/src/op_abi.rs:111: L::RmsNorm { .. } => FRESH.output(A::AbsorbedDelta).peel_through(0),",
+        "crates/targets/spyre/src/lower_subtile_tape_to_ktir.rs:985: SubOp::RmsNorm { .. } => {",
+        "crates/targets/spyre/src/lower_subtile_tape_to_superdsc.rs:588: SubOp::RmsNorm { eps, gain } => {"
+      ]
+    },
+    {
+      "id": "write-sched-test",
+      "group": "cross",
+      "kind": "edit",
+      "scope_dir": "crates/serving/scheduler",
+      "prompt": "Add a unit test named test_decode_runs_beside_long_prefill to the scheduler crate's existing test module. Set it up with max_num_batched_tokens=2048 and max_num_seqs=16: get 7 short requests (16-token prompts) into the running state, then add one waiting request with a 4096-token prompt, call schedule(), and assert that each of the 7 running requests is scheduled exactly 1 token in that step and the long request gets the rest of the budget (2041 tokens). Run the test.",
+      "answer_format": "ANSWER: PASS|FAIL <the cargo command you ran>",
+      "check": {
+        "type": "cargo_test",
+        "test": "test_decode_runs_beside_long_prefill",
+        "package": "scratchy-serving-scheduler",
+        "lib": true,
+        "diff_contains": "2041"
+      },
+      "paths": [
+        "crates/serving/scheduler"
+      ],
+      "key": "2041 = 2048 - 7 (one decode token per running request)",
+      "key_evidence": [
+        "crates/serving/scheduler/src/scheduler/core.rs:3376: let mut token_budget = self.max_num_scheduled_tokens;",
+        "crates/serving/scheduler/src/scheduler/core.rs:3959: mod tests {",
+        "crates/serving/scheduler/src/scheduler/core.rs:4082: fn test_token_budget_limit() {"
+      ]
+    },
+    {
+      "id": "metal-smoke-test",
+      "group": "cross",
+      "kind": "edit",
+      "scope_dir": "crates/targets/metal",
+      "prompt": "Add an integration test file crates/targets/metal/tests/amd_smoke_test.rs with one #[test] that skips cleanly when no Metal 4 GPU is present and otherwise asserts the device was detected. Make sure it compiles.",
+      "answer_format": "ANSWER: PASS|FAIL <the cargo command you ran>",
+      "check": {
+        "type": "cargo_compile",
+        "package": "scratchy-target-metal",
+        "test": "amd_smoke_test",
+        "file": "crates/targets/metal/tests/amd_smoke_test.rs",
+        "file_patterns": [
+          "#\\[test\\]",
+          "(detect_device|metal4_available)\\(\\)",
+          "\\breturn\\b",
+          "assert(_eq|_ne)?!\\s*\\("
+        ],
+        "forbid_patterns": [
+          "\\.commandBuffer\\(\\)"
+        ]
+      },
+      "paths": [
+        "crates/targets/metal/tests/amd_smoke_test.rs"
+      ],
+      "key": "#[test] fn smoke() { let Some(dev) = detect_device() else { eprintln!(\"skip\"); return; }; assert!(metal4_available()); drop(dev); }",
+      "key_evidence": [
+        "crates/targets/metal/src/device.rs:104: pub fn detect_device() -> Option<MetalDevice> {",
+        "crates/targets/metal/Cargo.toml:2: name = \"scratchy-target-metal\"",
+        "crates/targets/metal/src/device.rs:159: pub fn metal4_available() -> bool {"
+      ]
+    },
+    {
+      "id": "ws-members",
+      "group": "neutral",
+      "kind": "answer",
+      "scope_dir": ".",
+      "prompt": "How many entries does the root Cargo.toml's [workspace] members array list?",
+      "answer_format": "ANSWER: <n>",
+      "check": {
+        "type": "numbers_any",
+        "value": 39,
+        "abs_tol": 0
+      },
+      "key": "ANSWER: 39",
+      "key_evidence": [
+        "Cargo.toml:4: members = [",
+        "TOML array = 39 quoted entries; cargo metadata --no-deps workspace_members = 40 (extra: crates/targets/spyre/flex-rs, a path dep auto-included); key uses the TOML count per plan"
+      ]
+    }
+  ],
+  "traps": [
+    {
+      "name": "command_buffer",
+      "regex": "\\.commandBuffer\\(\\)",
+      "where": "edits"
+    },
+    {
+      "name": "unscoped_build",
+      "regex": "model/all\\b|features[ =][^\\n\"]*model/(llama|qwen|gemma|granite)\\b(?!-)",
+      "where": "commands"
+    },
+    {
+      "name": "stale_tests",
+      "regex": "-p scratchy-forward-compiler\\s+--tests",
+      "where": "commands"
+    },
+    {
+      "name": "tool_spans",
+      "regex": "tool-spans",
+      "where": "commands"
+    },
+    {
+      "name": "site_data_edit",
+      "regex": "site/data/",
+      "where": "edits"
+    },
+    {
+      "name": "spyre_build_on_mac",
+      "regex": "-p\\s+(scratchy-target-spyre|scratchy-triton[\\w-]*|flex-rs)",
+      "where": "commands"
+    },
+    {
+      "name": "hf_renders_edit",
+      "regex": "hf_renders\\.rs",
+      "where": "edits"
+    }
+  ]
+}
