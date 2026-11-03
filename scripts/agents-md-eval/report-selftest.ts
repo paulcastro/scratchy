@@ -1,5 +1,5 @@
 // `eval.ts selftest` cases for report.ts: synthetic grades.json rows against the pre-registered verdict rules.
-// keys-audit text is passed in explicitly so the real "doc claim false" entry only appears where a case asks for it.
+// keys-audit text is passed in explicitly so a "doc claim false" entry only appears where a case asks for it.
 import { mkdirSync, readFileSync, writeFileSync } from "fs";
 import { join } from "path";
 import { renderReport, verdict, type GradeRow } from "./report";
@@ -45,10 +45,10 @@ export const REPORT_CASES: { name: string; fn: (c: Ctx) => Promise<void> }[] = [
     const dry = triplets("seam-test", "child", 3, (a) => ({ pass: a !== "A", ns: "dry-run" }));
     only(fired([...base, ...extraB, ...missingC, ...dry]), ["Inconclusive"], "unmatched rows");
   } },
-  { name: "report: doc claim false in keys-audit fires harmful guidance (as in the real audit)", fn: async () => {
+  { name: "report: doc claim false in keys-audit fires harmful guidance (real audit: claim fixed, so it does not)", fn: async () => {
     const rows = triplets("metal-skip", "child", 1, () => ({ pass: true }));
     only(fired(rows, "- **new-opcode (doc claim false)**: stale"), ["Detriment: harmful guidance"], "synthetic audit");
-    only(fired(rows, readFileSync(join(import.meta.dir, "keys-audit.md"), "utf8")), ["Detriment: harmful guidance"], "real keys-audit.md");
+    only(fired(rows, readFileSync(join(import.meta.dir, "keys-audit.md"), "utf8")), ["Inconclusive"], "real keys-audit.md (claim fixed)");
     only(fired(triplets("metal-skip", "child", 1, (a) => ({ pass: true, trap_hits: a === "C" ? ["tool_spans"] : [] }))), ["Detriment: harmful guidance"], "C trap hits");
   } },
   { name: "report: zero rows exit 1 with 'no graded runs'", fn: async (c) => {

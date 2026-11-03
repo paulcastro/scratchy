@@ -96,7 +96,7 @@ ws-members	Cargo.toml	4	members = [
 
 ## Key corrections against the plan / docs
 
-- **new-opcode (doc claim false)**: root AGENTS.md says a new opcode is `Instruction` in `crates/compiler/ir/src/lib.rs` "+ one emitter arm per target". At BASE neither metal nor spyre matches `Instruction::` in code (`git grep -n 'Instruction::' acc4046b -- crates/targets/spyre/src` = no hits; in `crates/targets/metal/src` every hit is a comment). Both consume the shared subtile IR `SubOp` (`crates/compiler/subtile/src/subtile_ir.rs:1022 pub enum SubOp`), whose `ops.rs` rows generate exhaustive matches. Real per-target match sites for an existing op (`SubOp::RmsNorm`): metal `crates/targets/metal/compiler/src/steps_from_tape.rs:1982` and `crates/targets/metal/src/op_abi.rs:111` (exhaustive, E0004); spyre `crates/targets/spyre/src/lower_subtile_tape_to_ktir.rs:985` (exhaustive, E0004) and `lower_subtile_tape_to_superdsc.rs:588`. Regexes require the subtile IR file plus one metal and one spyre site. scope_dir moved to `crates/compiler/subtile`.
+- **new-opcode (doc claim, fixed in `docs/agents-md` 0b020856)**: root AGENTS.md said a new opcode is `Instruction` in `crates/compiler/ir/src/lib.rs` "+ one emitter arm per target". At BASE neither metal nor spyre matches `Instruction::` in code (`git grep -n 'Instruction::' acc4046b -- crates/targets/spyre/src` = no hits; in `crates/targets/metal/src` every hit is a comment). Both consume the shared subtile IR `SubOp` (`crates/compiler/subtile/src/subtile_ir.rs:1022 pub enum SubOp`), whose `ops.rs` rows generate exhaustive matches. Real per-target match sites for an existing op (`SubOp::RmsNorm`): metal `crates/targets/metal/compiler/src/steps_from_tape.rs:1982` and `crates/targets/metal/src/op_abi.rs:111` (exhaustive, E0004); spyre `crates/targets/spyre/src/lower_subtile_tape_to_ktir.rs:985` (exhaustive, E0004) and `lower_subtile_tape_to_superdsc.rs:588`. Regexes require the subtile IR file plus one metal and one spyre site. scope_dir moved to `crates/compiler/subtile`.
 - **ws-members**: prompt rephrased to "entries in the members array" because cargo metadata (40) != TOML (39).
 - **arch-count**: the test asserts `seen == 31` (arch_declarations.rs:206) but BASE has 32 `.py` files in `crates/models/arch/dsl/`. The key (the file path) is unaffected; the stale count is a pre-existing bug, not part of the key.
 - **emit-model**: regex tightened to `fn=\S*emit_model\b` so `emit_model_stub_items` (lib.rs:3403) and `emit_weights_struct` do not pass.
@@ -117,7 +117,7 @@ ws-members	Cargo.toml	4	members = [
 | superdsc-deps | root | serde_json | AGENTS.md (ANTI-PATTERNS) | ktir-superdsc, ktir, triton, triton-ktir-superdsc, serving/api AGENTS.md |
 | arch-count | root | arch_declarations | AGENTS.md (NOTES) | crates/compiler/macros/AGENTS.md |
 | commit-scope | root | fix(metal) | CLAUDE.md | none |
-| new-opcode | cross | Instruction / SubOp sites | AGENTS.md (wrong answer) | crates/compiler/AGENTS.md (wrong answer) |
+| new-opcode | cross | Instruction / SubOp sites | AGENTS.md (SubOp row, fixed) | crates/compiler/AGENTS.md (points at `subtile/`, fixed) |
 | write-sched-test | cross | test_decode_runs_beside_long_prefill, 2041 | none | none (edit task) |
 | metal-smoke-test | cross | detect_device | none | crates/targets/metal/AGENTS.md |
 | ws-members | neutral | workspace members count | none | none (no doc states 39/40) |
