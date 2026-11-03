@@ -62,5 +62,36 @@ The two rules that would directly show a benefit (**hierarchy benefit** and **co
 
 - At 2 reps per probe, these results are directional, not statistically significant.
 - The child probes were too easy to separate the arms. A rerun needs harder child probes for the hierarchy rule to be able to fire.
-- To measure the `new-opcode` fix, rerun with the fixed docs and a fresh `AMD_EVAL_OUT`. Before that rerun, drop the "doc claim false" line from `keys-audit.md`. Its "Key corrections" section would also need updating to say the docs claim is fixed.
+- The `new-opcode` fix was re-measured. See "Rerun with the fixed docs" below.
 - Both branches have been rebased onto `upstream/main` (`4a5816e3`). The harness still defaults to BASE `acc4046b`, so a rerun on the new base needs `AMD_EVAL_BASE` set and the probe answer keys checked against it.
+
+## Rerun with the fixed docs
+
+Same setup as above (sonnet `aws/claude-sonnet-5`, Claude Code 2.1.309, BASE `acc4046b`, 84 graded runs, unchanged probes and graders), with the docs at `docs/agents-md` `0b020856`, which includes the `SubOp` fix. `keys-audit.md` now records the claim as fixed, so it no longer fires the harmful-guidance rule. Spend was $18.40. Raw results are in `/tmp/scratchy-amd-eval-r2/matrix/` and are not committed.
+
+| | A (none) | B (hierarchical) | C (flat) |
+| --- | --- | --- | --- |
+| Pass rate | 93% (26/28) | **100% (28/28)** | 89% (25/28) |
+| Cost per pass | $0.216 | **$0.168** | $0.287 |
+| Total spend | $5.62 | **$4.70** | $7.17 |
+| Median input tokens | 124k | **87k** | 91k |
+| Median cache-write tokens | 12k | 15k | 70k |
+| Median tool calls | 7.5 | 3 | 0 |
+| Median searches before finding the right file (child probes) | 5 | **2** | n/a (answered from context) |
+| Median wall time | 42s | 19s | **9s** |
+| Trap hits | 0 | 0 | 0 |
+
+| Group | A | B | C |
+| --- | --- | --- | --- |
+| child (6 probes) | 10/12 | **12/12** | **12/12** |
+| root (4) | 8/8 | 8/8 | 7/8 |
+| cross (3) | 6/6 | 6/6 | 4/6 |
+| neutral (1) | 2/2 | 2/2 | 2/2 |
+
+- **The fix worked.** `new-opcode` went from A 0/2, B 1/2, C 1/2 to 2/2 in every arm. B answered it for $0.06 to $0.14 per run, against $0.60 to $0.99 for A.
+- **B passed every run.** It was again the cheapest per pass, and C cost 1.7x as much.
+- **Failures:** A missed `metal-skip` twice (it never found the skip message). C missed `metal-smoke-test` twice (no assert in the test) and `commit-scope` once. There were 3 budget hits, all on `write-sched-test`, and all 3 still passed. There were no timeouts.
+- **Verdict:** two rules fired.
+  - **Content benefit** (child passes A=10, B=12, C=12): the docs help, whichever layout carries them.
+  - **Detriment: overhead**: B's median input tokens on the neutral probe (`ws-members`) were 104k, against 58k for A, which is over the 1.25x limit. In absolute terms that is $0.05 to $0.07 per B call against $0.04 for A. With only 2 runs, the median is the mean of a 69k run and a 139k run, and the second run read extra files. Across all probes, B used fewer tokens and dollars than A.
+  - **Not fired:** harmful guidance (no trap hits, no false doc claims) and hierarchy benefit (B and C tied on child passes, and C has no search count to compare because it answers from context).
